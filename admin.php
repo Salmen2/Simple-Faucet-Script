@@ -192,6 +192,34 @@ if($_SESSION['admin']){
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
+		$content .= "<h4>Referral Program</h4>";
+
+		$referralPercent = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '15' LIMIT 1")->fetch_assoc()['value'];
+
+		if($_GET['c'] == "r"){
+			if(!$_POST['referral']){
+				$content .= alert("danger", "Commission can't be blank.");
+			} else {
+				if(!is_numeric($_POST['referral'])){
+					$content .= alert("danger", "Commission must be numeric");
+				} else {
+					$referralPercent = $mysqli->real_escape_string($_POST['referral']);
+
+					$mysqli->query("UPDATE faucet_settings Set value = '$referralPercent' WHERE id = '15'");
+					$content .= alert("success", "Referral Program Commission was changed successfully.");
+				}
+			}
+		}
+
+		$content .= "<form method='post' action='?p=as&c=r'>
+		<div class='form-group'>
+			<label>Commission in %</label>
+			<center><input class='form-control' type='number' name='referral' style='width: 225px;' value='$referralPercent' placeholder='25'></center>
+			<span class='help-block'>Enter without percent. Example: 10<br />To disable Referral Program enter 0
+		</div>
+		<button type='submit' class='btn btn-primary'>Change</button>
+		</form><br />";
+
 		$content .= "<h3>Keys settings</h3><h4>Faucetbox Key</h4>";
 
 		$faucetboxkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];

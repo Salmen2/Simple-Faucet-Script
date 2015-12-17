@@ -75,6 +75,19 @@ if($user){
 							$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Payout', '$payOutBTC', '$timestamp')");
 
 							$content .= alert("success", "You've claimed successfully ".$payOut." Satoshi.<br />You can claim again in ".$timer." minutes!");
+
+							$referralPercent = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '15' LIMIT 1")->fetch_assoc()['value'];
+
+							if($referralPercent >= 1){
+								if($user['referred_by'] != 0){
+									$referralPercentDecimal = floor($referralPercent) / 100;
+									$referralCommission = floor($referralPercentDecimal * $payOut);
+									$referralCommissionBTC = $referralCommission / 100000000;
+									$mysqli->query("UPDATE faucet_user_list Set balance = balance + $referralCommissionBTC, last_claim = '$timestamp' WHERE id = '{$user['referred_by']}'");
+									$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['referred_by']}', 'Referral', '$referralCommissionBTC', '$timestamp')");
+								}
+							}
+
 						}
 					}
 				}
@@ -92,6 +105,16 @@ if($user){
 
 	} else {
 		$content .= alert("warning", "Faucet is disabled.");
+	}
+
+	$referralPercent = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '15' LIMIT 1")->fetch_assoc()['value'];
+	if($referralPercent != "0"){
+	$content .= '<blockquote class="text-left">
+					<p>
+						Reflink: <code>'.$Website_Url.'?ref='.$user['id'].'</code>
+					</p>
+					<footer>Share this link with your friends and earn '.$referralPercent.'% referral commission</footer>
+				</blockquote>';
 	}
 
 } else {
