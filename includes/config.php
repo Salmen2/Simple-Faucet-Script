@@ -18,6 +18,6 @@ if(mysqli_connect_errno()){
 
 // Website
 
-$Website_Url = "http://salmen.website/Faucet/";
+$Website_Url = "http://yourdomain.com";
 
 ?>
