@@ -1,0 +1,28 @@
+#advertising {
+	padding-top: 10px;
+	
+}
+
+#containertop {
+	padding-top: 5px;
+	padding-bottom: 10px;
+	text-align: center;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+.content {
+	text-align: center;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+#banlist {
+	text-align: center;
+	margin-right: auto;
+	margin-left: auto;
+	background-color: lightblue;
+	height: 350px;
+	overflow: auto;
+	width: 475px;
+}
