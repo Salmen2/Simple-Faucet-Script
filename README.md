@@ -2,7 +2,7 @@
 Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. Use the reCaptcha version 2. Payments to the Account and withdraw over Faucetbox
 
 
-# MININUM REQUIREMENTS
+# Mininum Requirements
 
 - PHP >= 5.4 (tested on 5.6)
 
@@ -24,4 +24,15 @@ Admin Username: admin
 
 Admin Password: admin
 
-6. Now you're on the admin site and change the configuration to run your faucet!
+Now you're on the admin site and change the configuration to run your faucet!
+
+# Demo
+
+A demo is avaible: http://salmen.website/Faucet/
+
+
+# Donations
+
+I'm thankful for a small donation to my BTC Address:
+
+15uBT3rCJSHMKm42on8HsaC7yJUC7ScNLb
