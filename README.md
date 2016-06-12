@@ -35,4 +35,4 @@ A demo is avaible: http://salmen.website/Faucet/
 
 I'm thankful for a small donation to my BTC Address:
 
-15uBT3rCJSHMKm42on8HsaC7yJUC7ScNLb
+15BdNAJN8c5rAdZxWn4zW1vbt4r2vkJSDG
