@@ -6,7 +6,7 @@ if($_SESSION['address']){
 		$user = $AddressCheck->fetch_assoc()['id'];
 		$user = $mysqli->query("SELECT * FROM faucet_user_list WHERE id = '$user'")->fetch_assoc();
 	} else {
-		unset($_SESSION['user_session']);
+		unset($_SESSION['address']);
 		header("Location: index.php");
 		exit;
 	}
