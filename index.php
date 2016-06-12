@@ -153,7 +153,7 @@ if($user){
 					$referID = 0;
 				}
 
-				$AddressCheck = $mysqli->query("SELECT * FROM faucet_user_list WHERE address = '$Address' LIMIT 1")->fetch_row()[0];
+				$AddressCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE address = '$Address' LIMIT 1")->fetch_row()[0];
 				$timestamp = $mysqli->real_escape_string(time());
 				$ip = $mysqli->real_escape_string($_SERVER['REMOTE_ADDR']);
 
