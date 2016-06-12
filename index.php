@@ -83,7 +83,7 @@ if($user){
 									$referralPercentDecimal = floor($referralPercent) / 100;
 									$referralCommission = floor($referralPercentDecimal * $payOut);
 									$referralCommissionBTC = $referralCommission / 100000000;
-									$mysqli->query("UPDATE faucet_user_list Set balance = balance + $referralCommissionBTC, last_claim = '$timestamp' WHERE id = '{$user['referred_by']}'");
+									$mysqli->query("UPDATE faucet_user_list Set balance = balance + $referralCommissionBTC WHERE id = '{$user['referred_by']}'");
 									$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['referred_by']}', 'Referral', '$referralCommissionBTC', '$timestamp')");
 								}
 							}
