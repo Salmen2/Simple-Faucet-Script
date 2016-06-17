@@ -57,10 +57,10 @@ if($user){
 
 	// Referral
 
-	$TotalReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral Payout' AND userid = '{$user['id']}'")->fetch_row()[0];
+	$TotalReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral' AND userid = '{$user['id']}'")->fetch_row()[0];
 	$TotalReferralPayout = $TotalReferralPayout ? $TotalReferralPayout : 0;
 
-	$Last24HoursReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral Payout' AND userid = '{$user['id']}' AND timestamp > '$Last24Hours'")->fetch_row()[0];
+	$Last24HoursReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral' AND userid = '{$user['id']}' AND timestamp > '$Last24Hours'")->fetch_row()[0];
 	$Last24HoursReferralPayout = $Last24HoursReferralPayout ? $Last24HoursReferralPayout : 0;
 
 
