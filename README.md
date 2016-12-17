@@ -31,8 +31,6 @@ Now you're on the admin site and change the configuration to run your faucet!
 A demo is avaible: http://salmen.website/Faucet/
 
 
-# Donations
+# Fees
 
-I'm thankful for a small donation to my BTC Address:
-
-15BdNAJN8c5rAdZxWn4zW1vbt4r2vkJSDG
+A small fee of maximum 3 Satoshi will be sent to the owner for each claim.
