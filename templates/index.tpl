@@ -69,7 +69,7 @@
         <div class="row">
           <div class="col-md-12">
             <hr />
-            <span style="color: grey;">&copy; 2015 {$faucetname}</span>
+            <span style="color: grey;">&copy; 2016 {$faucetname}</span>
           </div>
         </div>
       </div>

@@ -37,7 +37,7 @@ function checkDirtyIp($ip){
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_TIMEOUT, "10");
-		curl_setopt($ch, CURLOPT_URL, "http://check.getipintel.net/check.php?ip=$ip");
+		curl_setopt($ch, CURLOPT_URL, "http://check.getipintel.net/check.php?ip=$ip"); // Note: In order to use it, you need to append your contact information such as '&email=yourmail@provider.com'
 		$response=curl_exec($ch);
 	
 		curl_close($ch);

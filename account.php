@@ -23,8 +23,8 @@ if($user){
 
 			$api_key = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
 			$currency = "BTC";
-			$faucetbox = new FaucetBOX($api_key, $currency);
-			$result = $faucetbox->send($user['address'], toSatoshi($user['balance']));
+			$faucethub = new FaucetHub($api_key, $currency);
+			$result = $faucethub->send($user['address'], toSatoshi($user['balance']), $_SERVER['REMOTE_ADDR']);
 			if($result["success"] === true){
 				$timestamp = time();
 				$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
@@ -36,7 +36,7 @@ if($user){
 		}
 
 		$content .= "<form method='post' action='?pt=1'>
-		<input type='hidden' name='token' value='".$_SESSION['token']."'/><button type='submit' class='btn btn-primary'>Withdraw to Faucetbox</button></form>";
+		<input type='hidden' name='token' value='".$_SESSION['token']."'/><button type='submit' class='btn btn-primary'>Withdraw to Faucethub</button></form>";
 	} else {
 		$content .= "<a href='#' class='btn btn-danger'>Withdraw is not avaible.</a>";
 	}
@@ -57,10 +57,10 @@ if($user){
 
 	// Referral
 
-	$TotalReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral' AND userid = '{$user['id']}'")->fetch_row()[0];
+	$TotalReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral Payout' AND userid = '{$user['id']}'")->fetch_row()[0];
 	$TotalReferralPayout = $TotalReferralPayout ? $TotalReferralPayout : 0;
 
-	$Last24HoursReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral' AND userid = '{$user['id']}' AND timestamp > '$Last24Hours'")->fetch_row()[0];
+	$Last24HoursReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral Payout' AND userid = '{$user['id']}' AND timestamp > '$Last24Hours'")->fetch_row()[0];
 	$Last24HoursReferralPayout = $Last24HoursReferralPayout ? $Last24HoursReferralPayout : 0;
 
 

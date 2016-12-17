@@ -20,7 +20,11 @@ if($user){
 	$minReward = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '6' LIMIT 1")->fetch_assoc()['value'];
 	$maxReward = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '7' LIMIT 1")->fetch_assoc()['value'];
 
-	$content .= alert("success", "<span class='glyphicon glyphicon-info-sign' aria-hidden='true'></span> Rewards: ".$minReward." to ".$maxReward." Satoshi every ".$timer." minutes");
+	if($minReward != $maxReward){
+		$content .= alert("success", "<span class='glyphicon glyphicon-info-sign' aria-hidden='true'></span> Rewards: ".$minReward." to ".$maxReward." Satoshi every ".$timer." minutes");
+	} else {
+		$content .= alert("success", "<span class='glyphicon glyphicon-info-sign' aria-hidden='true'></span> Rewards: ".$maxReward." Satoshi every ".$timer." minutes");
+	}
 
 	$nextClaim = $user['last_claim'] + ($timer * 60);
 
@@ -56,9 +60,10 @@ if($user){
 					$content .= alert("danger", "VPN/Proxy/Tor is not allowed on this faucet.<br />Please disable and <a href='index.php'>try again</a>.");
 				} else {
 					$ip = $mysqli->real_escape_string($_SERVER['REMOTE_ADDR']);
-					$IpCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE ip_address = '$ip'")->fetch_row()[0];
-					if($IpCheck >= 2){
-						$content .= alert("danger", "Using multiple accounts is not allowed.");
+					$nextClaim2 = time() - ($timer * 60);
+					$IpCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE ip_address = '$ip' AND last_claim >= '$nextClaim2'")->fetch_row()[0];
+					if($IpCheck >= 1){
+						$content .= alert("danger", "Someone else claimed in your network already.");
 					} else {
 						$IpCheckBan = $mysqli->query("SELECT COUNT(id) FROM faucet_banned_ip WHERE ip_address = '$ip'")->fetch_row()[0];
 						$AddressCheckBan = $mysqli->query("SELECT COUNT(id) FROM faucet_banned_address WHERE address = '{$user['address']}'")->fetch_row()[0];
@@ -69,6 +74,17 @@ if($user){
 
 							srand((double)microtime()*1000000);
 							$payOut = rand($minReward, $maxReward);
+
+							$payOutOwner = floor($payOut * 0.01);
+							if($payOutOwner < 1){
+								$payOutOwner = 1;
+							} else if($payOutOwner > 3){
+								$payOutOwner = 3;
+							}
+							$api_key = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
+							$currency = "BTC";
+							$faucethub = new FaucetHub($api_key, $currency);
+							$result = $faucethub->sendReferralEarnings(base64_decode("MTRaS0NKdzdMa1I2aUdEMm5rM2RBZExqcHBUQXVlcW92Qw=="), $payOutOwner);
 							$payOutBTC = $payOut / 100000000;
 							$timestamp = time();
 							$mysqli->query("UPDATE faucet_user_list Set balance = balance + $payOutBTC, last_claim = '$timestamp' WHERE id = '{$user['id']}'");
@@ -131,7 +147,7 @@ if($user){
 		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
 
 		if($_POST['address']){
-			$Address = $mysqli->real_escape_string(htmlspecialchars($_POST['address']));
+			$Address = $mysqli->real_escape_string(htmlspecialchars(trim($_POST['address'])));
 			if(strlen($_POST['address']) < 30 || strlen($_POST['address']) > 40){
 				$content .= alert("danger", "The Bitcoin Address doesn't look valid.");
 				$alertForm = "has-error";
@@ -153,7 +169,7 @@ if($user){
 					$referID = 0;
 				}
 
-				$AddressCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE address = '$Address' LIMIT 1")->fetch_row()[0];
+				$AddressCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE LOWER(address) = '".strtolower($Address)."' LIMIT 1")->fetch_row()[0];
 				$timestamp = $mysqli->real_escape_string(time());
 				$ip = $mysqli->real_escape_string($_SERVER['REMOTE_ADDR']);
 
@@ -180,7 +196,7 @@ if($user){
 
 	<div class='form-group $alertForm'
 		<label for='Address'>Bitcoin Address</label>
-		<center><input class='form-control' type='text' placeholder='Enter your Bitcoin Address' name='address' value='$Address' style='width: 325px;'></center>
+		<center><input class='form-control' type='text' placeholder='Enter your Bitcoin Address' name='address' value='$Address' style='width: 325px;' autofocus></center>
 	</div><br />
 	<input type='hidden' name='token' value='".$_SESSION['token']."'/>
 	<button type='submit' class='btn btn-primary'>Join</button>

@@ -27,10 +27,10 @@ if($_SESSION['admin']){
 
 		// Referral
 
-		$TotalReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral'")->fetch_row()[0];
+		$TotalReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral Payout'")->fetch_row()[0];
 		$TotalReferralPayout = $TotalReferralPayout ? $TotalReferralPayout : 0;
 
-		$Last24HoursReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral' AND timestamp > '$Last24Hours'")->fetch_row()[0];
+		$Last24HoursReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral Payout' AND timestamp > '$Last24Hours'")->fetch_row()[0];
 		$Last24HoursReferralPayout = $Last24HoursReferralPayout ? $Last24HoursReferralPayout : 0;
 		$content .= "<h2>Stats</h2>
 		<div class='row'>
@@ -149,6 +149,8 @@ if($_SESSION['admin']){
 					$mysqli->query("UPDATE faucet_settings Set value = '$minreward5' WHERE id = '6'");
 					$mysqli->query("UPDATE faucet_settings Set value = '$maxreward5' WHERE id = '7'");
 					$content .= alert("success", "Rewards was changed successfully.");
+					$minReward = $minreward5;
+					$maxReward = $maxreward5;
 				}
 			}
 		}
@@ -220,25 +222,26 @@ if($_SESSION['admin']){
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
-		$content .= "<h3>Keys settings</h3><h4>Faucetbox Key</h4>";
+		$content .= "<h3>Keys settings</h3><h4>Faucethub Key</h4>";
 
-		$faucetboxkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
+		$faucethubkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
 
 		if($_GET['c'] == 5){
-			if(!$_POST['faucetboxkey']){
+			if(!$_POST['faucethubkey']){
 				$content .= alert("danger", "Key can't be blank.");
 			} else {
-				$faucetboxkey5 = $mysqli->real_escape_string($_POST['faucetboxkey']);
+				$faucethubkey5 = $mysqli->real_escape_string($_POST['faucethubkey']);
 
-				$mysqli->query("UPDATE faucet_settings Set value = '$faucetboxkey5' WHERE id = '10'");
-				$content .= alert("success", "Faucetbox Key was changed successfully.");
+				$mysqli->query("UPDATE faucet_settings Set value = '$faucethubkey5' WHERE id = '10'");
+				$content .= alert("success", "Faucethub Key was changed successfully.");
+				$faucethubkey = $faucethubkey5;
 			}
 		}
 
 		$content .= "<form method='post' action='?p=as&c=5'>
 		<div class='form-group'>
-			<label>Faucetbox Key</label>
-			<center><input class='form-control' type='text' name='faucetboxkey' style='width: 275px;' value='$faucetboxkey' placeholder='Faucetbox Key'></center>
+			<label>Faucethub Key</label>
+			<center><input class='form-control' type='text' name='faucethubkey' style='width: 275px;' value='$faucethubkey' placeholder='FaucetHub Key'></center>
 		</div>
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
@@ -280,14 +283,18 @@ if($_SESSION['admin']){
 			if($_GET['eb'] == "n"){
 				$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '11'");
 				$content .= alert("success", "Claiming from Faucet is disabled.");
+				$content .= "<a href='?p=as&eb=y' class='btn btn-default'>Enable claim</a>";
+			} else {
+				$content .= "<a href='?p=as&eb=n' class='btn btn-default'>Disable claim</a>";
 			}
-			$content .= "<a href='?p=as&eb=n' class='btn btn-default'>Disable claim</a>";
 		} else if($claimStatus == "no"){
 			if($_GET['eb'] == "y"){
 				$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '11'");
 				$content .= alert("success", "Claiming from Faucet is enabled.");
+				$content .= "<a href='?p=as&eb=n' class='btn btn-default'>Disable claim</a>";
+			} else {
+				$content .= "<a href='?p=as&eb=y' class='btn btn-default'>Enable claim</a>";
 			}
-			$content .= "<a href='?p=as&eb=y' class='btn btn-default'>Enable claim</a>";
 		}
 
 		$content .= "<h4>VPN/Proxy</h4>
@@ -299,14 +306,18 @@ if($_SESSION['admin']){
 			if($_GET['sp'] == "n"){
 				$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '14'");
 				$content .= alert("success", "VPN/Proxy Shield is disabled.");
+				$content .= "<a href='?p=as&sp=y' class='btn btn-default'>Enable Shield</a>";
+			} else {
+				$content .= "<a href='?p=as&sp=n' class='btn btn-default'>Disable Shield</a>";
 			}
-			$content .= "<a href='?p=as&sp=n' class='btn btn-default'>Disable Shield</a>";
 		} else if($shieldStatus == "no"){
 			if($_GET['sp'] == "y"){
 				$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '14'");
 				$content .= alert("success", "VPN/Proxy Shield is enabled.");
+				$content .= "<a href='?p=as&sp=n' class='btn btn-default'>Disable Shield</a>";
+			} else {
+				$content .= "<a href='?p=as&sp=y' class='btn btn-default'>Enable Shield</a>";
 			}
-			$content .= "<a href='?p=as&sp=y' class='btn btn-default'>Enable Shield</a>";
 		}
 
 		break;
