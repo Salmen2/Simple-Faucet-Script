@@ -31,6 +31,6 @@ Now you're on the admin site and change the configuration to run your faucet!
 A demo is avaible: http://salmen.website/Faucet/
 
 
-# Fees
+# Fee
 
 A small fee of maximum 3 Satoshi will be sent to the owner for each claim.
