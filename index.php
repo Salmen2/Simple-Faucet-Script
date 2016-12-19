@@ -56,12 +56,11 @@ if($user){
 				$content .= alert("danger", "Captcha is wrong. <a href='index.php'>Try again</a>.");
 			} else {
 				$VPNShield = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '14' LIMIT 1")->fetch_assoc()['value'];
-				if(checkDirtyIp($_SERVER['REMOTE_ADDR']) AND $VPNShield == "yes"){
+				if(checkDirtyIp($realIpAddressUser) AND $VPNShield == "yes"){
 					$content .= alert("danger", "VPN/Proxy/Tor is not allowed on this faucet.<br />Please disable and <a href='index.php'>try again</a>.");
 				} else {
-					$ip = $mysqli->real_escape_string($_SERVER['REMOTE_ADDR']);
 					$nextClaim2 = time() - ($timer * 60);
-					$IpCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE ip_address = '$ip' AND last_claim >= '$nextClaim2'")->fetch_row()[0];
+					$IpCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE ip_address = '$realIpAddressUser' AND last_claim >= '$nextClaim2'")->fetch_row()[0];
 					if($IpCheck >= 1){
 						$content .= alert("danger", "Someone else claimed in your network already.");
 					} else {
@@ -134,7 +133,8 @@ if($user){
 	}
 
 } else {
-	$content .= "<h2>Demo Faucet</h2>";
+	$faucetName = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '1'")->fetch_assoc()['value'];
+	$content .= "<h2>".$faucetName."</h2>";
 	$content .= "<h3>Enter your Address and start to claim!</h3><br />";
 
 	if(isset($_POST['address'])){
@@ -147,7 +147,7 @@ if($user){
 		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
 
 		if($_POST['address']){
-			$Address = $mysqli->real_escape_string(htmlspecialchars(trim($_POST['address'])));
+			$Address = $mysqli->real_escape_string(preg_replace("/[^ \w]+/", "",trim($_POST['address'])));
 			if(strlen($_POST['address']) < 30 || strlen($_POST['address']) > 40){
 				$content .= alert("danger", "The Bitcoin Address doesn't look valid.");
 				$alertForm = "has-error";
@@ -171,7 +171,7 @@ if($user){
 
 				$AddressCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE LOWER(address) = '".strtolower($Address)."' LIMIT 1")->fetch_row()[0];
 				$timestamp = $mysqli->real_escape_string(time());
-				$ip = $mysqli->real_escape_string($_SERVER['REMOTE_ADDR']);
+				$ip = $mysqli->real_escape_string($realIpAddressUser);
 
 				if($AddressCheck == 1){
 					$_SESSION['address'] = $Address;
@@ -179,7 +179,7 @@ if($user){
 					header("Location: index.php");
 					exit;
 				} else {
-					$ip = $mysqli->real_escape_string($_SERVER['REMOTE_ADDR']);
+					$ip = $mysqli->real_escape_string($realIpAddressUser);
 					$mysqli->query("INSERT INTO faucet_user_list (address, ip_address, balance, joined, last_activity, referred_by) VALUES ('$Address', '$ip', '0', '$timestamp', '$timestamp', '$referID')");
 					$_SESSION['address'] = $Address;
 					header("Location: index.php");

@@ -24,7 +24,7 @@ if($user){
 			$api_key = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
 			$currency = "BTC";
 			$faucethub = new FaucetHub($api_key, $currency);
-			$result = $faucethub->send($user['address'], toSatoshi($user['balance']), $_SERVER['REMOTE_ADDR']);
+			$result = $faucethub->send($user['address'], toSatoshi($user['balance']), $realIpAddressUser);
 			if($result["success"] === true){
 				$timestamp = time();
 				$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");

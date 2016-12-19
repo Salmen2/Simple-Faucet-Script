@@ -320,6 +320,31 @@ if($_SESSION['admin']){
 			}
 		}
 
+		// Reverse proxy
+
+		$content .= "<h4>Reverse Proxy</h4>
+		<p>If you have CloudFlare enabled, you need to activate this feature</p>";
+
+		$reverseProxyStatus = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '16' LIMIT 1")->fetch_assoc()['value'];
+
+		if($reverseProxyStatus == "yes"){
+			if($_GET['rvp'] == "n"){
+				$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '16'");
+				$content .= alert("success", "Reverse Proxy is disabled.");
+				$content .= "<a href='?p=as&rvp=y' class='btn btn-default'>Enable Reverse Proxy Feature</a>";
+			} else {
+				$content .= "<a href='?p=as&rvp=n' class='btn btn-default'>Disable Reverse Proxy Feature</a>";
+			}
+		} else if($reverseProxyStatus == "no"){
+			if($_GET['rvp'] == "y"){
+				$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '16'");
+				$content .= alert("success", "Reverse Proxy is enabled.");
+				$content .= "<a href='?p=as&rvp=n' class='btn btn-default'>Disable Reverse Proxy Feature</a>";
+			} else {
+				$content .= "<a href='?p=as&rvp=y' class='btn btn-default'>Enable Reverse Proxy Feature</a>";
+			}
+		}
+
 		break;
 
 		case("ps"):
@@ -644,6 +669,7 @@ if($_SESSION['admin']){
 		exit;
 		}
 		unset($_SESSION['token']);
+		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
 
 		if($_POST['username'] AND $_POST['password']){
 			$username = $mysqli->real_escape_string($_POST['username']);
@@ -651,17 +677,26 @@ if($_SESSION['admin']){
 
 			$UserDB = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '12' LIMIT 1")->fetch_assoc()['value'];
 			$PwDB = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '13' LIMIT 1")->fetch_assoc()['value'];
+			$loginAttempt = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '17' LIMIT 1")->fetch_assoc()['value'];
 
-			if($UserDB == $username){
-				if($PwDB == $password){
-					$_SESSION['admin'] = "Admin_".$username."_Password_".$password;
-					header("Location: admin.php");
-					exit;
-				} else {
-					$content .= alert("danger", "Password is wrong.");
-				}
+			$lastLoginSecond = time() - $loginAttempt;
+
+			$mysqli->query("UPDATE faucet_settings Set value = '".time()."' WHERE id = '17'");
+
+			if($lastLoginSecond < 4){
+				$content .= alert("danger", "You're trying to log in very fast.");
 			} else {
-				$content .= alert("danger", "Username is wrong.");
+				if($UserDB == $username){
+					if($PwDB == $password){
+						$_SESSION['admin'] = "Admin_".$username."_Password_".$password;
+						header("Location: admin.php");
+						exit;
+					} else {
+						$content .= alert("danger", "Password is wrong.");
+					}
+				} else {
+					$content .= alert("danger", "Username is wrong.");
+				}
 			}
 		} else if($_POST['username']){
 			$content .= alert("Please fill all fields.");
