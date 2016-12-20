@@ -32,7 +32,10 @@ if($reverseProxy == "yes"){
 	    }
 	} else {
 		echo "Warning: We only support Cloudflare as reverse proxy.";
+		$realIpAddressUser = $_SERVER['REMOTE_ADDR'];
 	}
+} else {
+	$realIpAddressUser = $_SERVER['REMOTE_ADDR'];
 }
 
 // CSRF PROTECTION
