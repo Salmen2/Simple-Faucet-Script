@@ -29,25 +29,20 @@ function CaptchaCheck($response)
 }
 
 function checkDirtyIp($ip){
-	global $_SERVER;
 	
-	if(@fsockopen($_SERVER['REMOTE_ADDR'], 80, $errstr, $errno, 1)){
-		return true;
-	} else {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_TIMEOUT, "10");
-		curl_setopt($ch, CURLOPT_URL, "http://v1.nastyhosts.com/$ip");
+		curl_setopt($ch, CURLOPT_URL, "http://v1.nastyhosts.com/".$ip);
 		$response=curl_exec($ch);
 	
 		curl_close($ch);
 	  $nastyArray = json_decode($response);
-		if($nastyArray->suggestion == "allow"){
+		if($nastyArray->suggestion == "deny"){
 			return true;
 		} else {
 			return false;
 		}
-	}
 }
 
 function findTimeAgo($past) {

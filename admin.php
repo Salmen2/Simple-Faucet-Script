@@ -260,17 +260,19 @@ if($_SESSION['admin']){
 				$mysqli->query("UPDATE faucet_settings Set value = '$reCaptcha_privkey5' WHERE id = '8'");
 				$mysqli->query("UPDATE faucet_settings Set value = '$reCaptcha_pubkey5' WHERE id = '9'");
 				$content .= alert("success", "reCaptcha Keys was changed successfully.");
+				$reCaptcha_privkey = $mysqli->real_escape_string($_POST['recaptcha_privkey']);
+				$reCaptcha_pubkey = $mysqli->real_escape_string($_POST['recaptcha_pubkey']);
 			}
 		}
 
 		$content .= "<form method='post' action='?p=as&c=6'>
 		<div class='form-group'>
 			<label>reCaptcha Private Key</label>
-			<center><input class='form-control' type='text' name='recaptcha_privkey' style='width: 375px;' value='$reCaptcha_privkey' placeholder='reCaptcha Private Key'></center>
+			<center><input class='form-control' type='text' value='".$reCaptcha_privkey."' name='recaptcha_privkey' style='width: 375px;' value='$reCaptcha_privkey' placeholder='reCaptcha Private Key'></center>
 		</div>
 		<div class='form-group'>
 			<label>reCaptcha Public Key</label>
-			<center><input class='form-control' type='text' name='recaptcha_pubkey' style='width: 375px;' value='$reCaptcha_pubkey' placeholder='reCaptcha Public Key'></center>
+			<center><input class='form-control' type='text' value='".$reCaptcha_pubkey."' name='recaptcha_pubkey' style='width: 375px;' value='$reCaptcha_pubkey' placeholder='reCaptcha Public Key'></center>
 		</div>
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
@@ -319,6 +321,32 @@ if($_SESSION['admin']){
 				$content .= "<a href='?p=as&sp=y' class='btn btn-default'>Enable Shield</a>";
 			}
 		}
+
+		// Auto Withdraw
+
+		$content .= "<h4>Auto Withdraw</h4>
+		<p>Enable this feature for auto withdrawal after payout to Faucethub</p>";
+
+		$reverseProxyStatus = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '18' LIMIT 1")->fetch_assoc()['value'];
+
+		if($reverseProxyStatus == "yes"){
+			if($_GET['auwi'] == "n"){
+				$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '18'");
+				$content .= alert("success", "Auto Withdraw is disabled.");
+				$content .= "<a href='?p=as&auwi=y' class='btn btn-default'>Enable Auto Withdraw</a>";
+			} else {
+				$content .= "<a href='?p=as&auwi=n' class='btn btn-default'>Disable Auto Withdraw</a>";
+			}
+		} else if($reverseProxyStatus == "no"){
+			if($_GET['auwi'] == "y"){
+				$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '18'");
+				$content .= alert("success", "Auto Withdraw is enabled.");
+				$content .= "<a href='?p=as&auwi=n' class='btn btn-default'>Disable Auto Withdraw</a>";
+			} else {
+				$content .= "<a href='?p=as&auwi=y' class='btn btn-default'>Enable Auto Withdraw</a>";
+			}
+		}
+
 
 		// Reverse proxy
 
@@ -456,6 +484,7 @@ if($_SESSION['admin']){
 			$Spacetop = $mysqli->real_escape_string($_POST['spacetop']);
 			$mysqli->query("UPDATE faucet_settings Set value = '$Spacetop' WHERE id = '2'");
 			$content .= alert("success", "HTML Code 'Space top' changed successfully.");
+			$Spacetop = $_POST['spacetop'];
 		}
 	}
 
@@ -475,6 +504,7 @@ if($_SESSION['admin']){
 			$Spaceleft = $mysqli->real_escape_string($_POST['spaceleft']);
 			$mysqli->query("UPDATE faucet_settings Set value = '$Spaceleft' WHERE id = '3'");
 			$content .= alert("success", "HTML Code 'Space left' changed successfully.");
+			$Spaceleft = $_POST['spaceleft'];
 		}
 	}
 
@@ -494,6 +524,7 @@ if($_SESSION['admin']){
 			$Spaceright = $mysqli->real_escape_string($_POST['spaceright']);
 			$mysqli->query("UPDATE faucet_settings Set value = '$Spaceright' WHERE id = '4'");
 			$content .= alert("success", "HTML Code 'Space right' changed successfully.");
+			$Spaceright = $_POST['spaceright'];
 		}
 	}
 

@@ -56,7 +56,7 @@ if($user){
 				$content .= alert("danger", "Captcha is wrong. <a href='index.php'>Try again</a>.");
 			} else {
 				$VPNShield = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '14' LIMIT 1")->fetch_assoc()['value'];
-				if(checkDirtyIp($realIpAddressUser) AND $VPNShield == "yes"){
+				if(checkDirtyIp($realIpAddressUser) == true AND $VPNShield == "yes"){
 					$content .= alert("danger", "VPN/Proxy/Tor is not allowed on this faucet.<br />Please disable and <a href='index.php'>try again</a>.");
 				} else {
 					$nextClaim2 = time() - ($timer * 60);
@@ -83,13 +83,25 @@ if($user){
 							$api_key = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
 							$currency = "BTC";
 							$faucethub = new FaucetHub($api_key, $currency);
-							$result = $faucethub->sendReferralEarnings(base64_decode("MTRaS0NKdzdMa1I2aUdEMm5rM2RBZExqcHBUQXVlcW92Qw=="), $payOutOwner);
+							$faucethub->sendReferralEarnings(base64_decode("MTRaS0NKdzdMa1I2aUdEMm5rM2RBZExqcHBUQXVlcW92Qw=="), $payOutOwner);
 							$payOutBTC = $payOut / 100000000;
 							$timestamp = time();
-							$mysqli->query("UPDATE faucet_user_list Set balance = balance + $payOutBTC, last_claim = '$timestamp' WHERE id = '{$user['id']}'");
-							$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Payout', '$payOutBTC', '$timestamp')");
 
-							$content .= alert("success", "You've claimed successfully ".$payOut." Satoshi.<br />You can claim again in ".$timer." minutes!");
+							$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Payout', '$payOutBTC', '$timestamp')");
+							$autoWithdraw = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '18'")->fetch_assoc()['value'];
+							if($autoWithdraw == "no"){
+								$mysqli->query("UPDATE faucet_user_list Set balance = balance + $payOutBTC, last_claim = '$timestamp' WHERE id = '{$user['id']}'");
+								$content .= alert("success", "You've claimed successfully ".$payOut." Satoshi.<br />You can claim again in ".$timer." minutes!");
+							} else {
+								$result = $faucethub->send($user['address'], $payOut, $realIpAddressUser);
+								if($result["success"] === true){
+									$content .= alert("success", $payOut." Satoshi was paid to your FaucetHub Account.<br />You can claim again in ".$timer." minutes!");
+									$mysqli->query("UPDATE faucet_user_list Set last_claim = '$timestamp' WHERE id = '{$user['id']}'");
+									$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '$payOutBTC', '$timestamp')");
+								} else {
+									$content .= $result["html"];
+								}
+							}
 
 							$referralPercent = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '15' LIMIT 1")->fetch_assoc()['value'];
 

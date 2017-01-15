@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `faucet_banlist` (
   `ip_address` varchar(50) NOT NULL,
   `timestamp` int(32) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=293 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `faucet_banned_address` (
   `id` int(32) unsigned NOT NULL AUTO_INCREMENT,
@@ -24,23 +24,23 @@ CREATE TABLE IF NOT EXISTS `faucet_pages` (
   `content` text NOT NULL,
   `timestamp_created` int(32) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=2 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `faucet_settings` (
   `id` int(32) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `value` varchar(400) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=18 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=19 ;
 
 INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
-(1, 'faucet_name', 'Bitcoin Faucet'),
+(1, 'faucet_name', 'FaucetHub Faucet'),
 (2, 'space_top', 'Space on the top'),
 (3, 'space_left', 'Space on the left side'),
 (4, 'space_right', 'Space on the right side'),
 (5, 'timer', '60'),
 (6, 'min_reward', '1'),
-(7, 'max_reward', '500'),
+(7, 'max_reward', '100'),
 (8, 'reCaptcha_privKey', ''),
 (9, 'reCaptcha_pubKey', ''),
 (10, 'faucethub_key', ''),
@@ -50,7 +50,8 @@ INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
 (14, 'vpn_shield', 'no'),
 (15, 'referral_percent', '0'),
 (16, 'reverse_proxy', 'no'),
-(17, 'admin_login', '1482176869');
+(17, 'admin_login', '0'),
+(18, 'auto_withdraw', 'no');
 
 CREATE TABLE IF NOT EXISTS `faucet_transactions` (
   `id` int(32) unsigned NOT NULL AUTO_INCREMENT,
@@ -59,8 +60,7 @@ CREATE TABLE IF NOT EXISTS `faucet_transactions` (
   `amount` decimal(10,8) NOT NULL,
   `timestamp` int(32) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=21 ;
-
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `faucet_user_list` (
   `id` int(32) unsigned NOT NULL AUTO_INCREMENT,
@@ -73,4 +73,4 @@ CREATE TABLE IF NOT EXISTS `faucet_user_list` (
   `last_claim` int(32) NOT NULL,
   `claim_cryptokey` varchar(75) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=23 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
