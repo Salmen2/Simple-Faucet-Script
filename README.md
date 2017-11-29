@@ -34,3 +34,7 @@ A demo is avaible: http://salmen.website/Faucet/
 # Fee
 
 A small fee of maximum 3 Satoshi will be sent to the owner for each claim.
+
+# Terms and Conditions
+
+You have the rights to modify the code, as long you do not remove the fees/license.
