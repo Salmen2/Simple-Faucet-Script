@@ -1,11 +1,3 @@
-CREATE TABLE IF NOT EXISTS `faucet_banlist` (
-  `id` int(32) unsigned NOT NULL AUTO_INCREMENT,
-  `bitcoin_address` varchar(50) NOT NULL,
-  `ip_address` varchar(50) NOT NULL,
-  `timestamp` int(32) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
-
 CREATE TABLE IF NOT EXISTS `faucet_banned_address` (
   `id` int(32) unsigned NOT NULL AUTO_INCREMENT,
   `address` varchar(100) NOT NULL,
@@ -31,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `faucet_settings` (
   `name` varchar(50) NOT NULL,
   `value` varchar(400) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=19 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=24 ;
 
 INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
 (1, 'faucet_name', 'FaucetHub Faucet'),
@@ -50,8 +42,13 @@ INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
 (14, 'vpn_shield', 'no'),
 (15, 'referral_percent', '0'),
 (16, 'reverse_proxy', 'no'),
-(17, 'admin_login', '0'),
-(18, 'auto_withdraw', 'no');
+(17, 'admin_login', ''),
+(18, 'auto_withdraw', 'no'),
+(19, 'bitcaptcha_id', ''),
+(20, 'bitcaptcha_private_key', ''),
+(21, 'bitcaptcha_id_www', ''),
+(22, 'bitcaptcha_private_key_www', ''),
+(23, 'captcha_select', '1');
 
 CREATE TABLE IF NOT EXISTS `faucet_transactions` (
   `id` int(32) unsigned NOT NULL AUTO_INCREMENT,
@@ -60,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `faucet_transactions` (
   `amount` decimal(10,8) NOT NULL,
   `timestamp` int(32) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `faucet_user_list` (
   `id` int(32) unsigned NOT NULL AUTO_INCREMENT,
@@ -73,4 +70,4 @@ CREATE TABLE IF NOT EXISTS `faucet_user_list` (
   `last_claim` int(32) NOT NULL,
   `claim_cryptokey` varchar(75) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;

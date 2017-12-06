@@ -5,6 +5,7 @@ include("config.php");
 include("session.php");
 include("template.class.php");
 include("template.settings.php");
+include("sqn.php");
 include("functions.php");
 include("faucethub.php");
 

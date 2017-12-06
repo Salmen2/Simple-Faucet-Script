@@ -222,6 +222,39 @@ if($_SESSION['admin']){
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
+		$content .= "<h3>Captcha Preference</h3><p>Enable more than one captcha, to simplify the user's experience.<br />We recommend BitCaptcha, to profit from the Captcha itself.</p><br /><br />";
+
+		if($_GET['c'] == 55){
+			if(!is_numeric($_POST['captchaselect']) OR ($_POST['captchaselect'] < 1 AND $_POST['captchaselect'] > 3)){
+				$content .= alert("danger", "Please select your captcha.");
+			} else {
+				$captchaSelection = $mysqli->real_escape_string($_POST['captchaselect']);
+				$mysqli->query("UPDATE faucet_settings Set value = '$captchaSelection' WHERE id = '23'");
+				$content .= alert("success", "Your preference has been saved.");
+				$captchaSelect = $captchaSelection;
+			}
+		}
+
+		$captchaSelect = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '23'")->fetch_assoc()['value'];
+
+		$content .= "<form method='post' action='?p=as&c=55'>
+		<div class='form-group'>
+			<label class='radio-inline' for='radios-0'>
+				<input type='radio' ".(($captchaSelect == 1) ? 'checked=checked' : '')." id='radios-0' name='captchaselect' value='1'>
+				BitCaptcha
+			</label>
+			<label class='radio-inline' for='radios-1'>
+				<input type='radio' ".(($captchaSelect == 2) ? 'checked=checked' : '')." id='radios-1' name='captchaselect' value='2'>
+				reCaptcha
+			</label>
+			<label class='radio-inline' for='radios-2'>
+				<input type='radio' ".(($captchaSelect == 3) ? 'checked=checked' : '')." id='radios-2' name='captchaselect' value='3'>
+				Both Captchas
+			</label><br />
+		</div>
+		<button type='submit' class='btn btn-primary'>Change</button>
+		</form><br /><br />";
+
 		$content .= "<h3>Keys settings</h3><h4>Faucethub Key</h4>";
 
 		$faucethubkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
@@ -268,11 +301,55 @@ if($_SESSION['admin']){
 		$content .= "<form method='post' action='?p=as&c=6'>
 		<div class='form-group'>
 			<label>reCaptcha Private Key</label>
-			<center><input class='form-control' type='text' value='".$reCaptcha_privkey."' name='recaptcha_privkey' style='width: 375px;' value='$reCaptcha_privkey' placeholder='reCaptcha Private Key'></center>
+			<center><input class='form-control' type='text' value='".$reCaptcha_privkey."' name='recaptcha_privkey' style='width: 375px;' placeholder='reCaptcha Private Key'></center>
 		</div>
 		<div class='form-group'>
 			<label>reCaptcha Public Key</label>
-			<center><input class='form-control' type='text' value='".$reCaptcha_pubkey."' name='recaptcha_pubkey' style='width: 375px;' value='$reCaptcha_pubkey' placeholder='reCaptcha Public Key'></center>
+			<center><input class='form-control' type='text' value='".$reCaptcha_pubkey."' name='recaptcha_pubkey' style='width: 375px;' placeholder='reCaptcha Public Key'></center>
+		</div>
+		<button type='submit' class='btn btn-primary'>Change</button>
+		</form><br />";
+
+		$content .= "<h4>BitCaptcha Keys</h4>";
+
+		$bitCaptchaID1 = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '19' LIMIT 1")->fetch_assoc()['value'];
+		$bitCaptchaPriKey1 = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '20' LIMIT 1")->fetch_assoc()['value'];
+		$bitCaptchaID2 = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '21' LIMIT 1")->fetch_assoc()['value'];
+		$bitCaptchaPriKey2 = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '22' LIMIT 1")->fetch_assoc()['value'];
+		
+		if($_GET['c'] == 7){
+			if(!$_POST['bitcaptchaid1'] AND !$_POST['bitCaptchaID2']){
+				$content .= alert("danger", "BitCaptcha Keys cannot be blank.");
+			} else {
+				$bitCaptchaID1 = $mysqli->real_escape_string($_POST['bitcaptchaid1']);
+				$bitCaptchaPriKey1 = $mysqli->real_escape_string($_POST['bitcaptchaprikey1']);
+				$bitCaptchaID2 = $mysqli->real_escape_string($_POST['bitcaptchaid2']);
+				$bitCaptchaPriKey2 = $mysqli->real_escape_string($_POST['bitcaptchaprikey2']);
+
+				$mysqli->query("UPDATE faucet_settings Set value = '$bitCaptchaID1' WHERE id = '19'");
+				$mysqli->query("UPDATE faucet_settings Set value = '$bitCaptchaPriKey1' WHERE id = '20'");
+				$mysqli->query("UPDATE faucet_settings Set value = '$bitCaptchaID2' WHERE id = '21'");
+				$mysqli->query("UPDATE faucet_settings Set value = '$bitCaptchaPriKey2' WHERE id = '22'");
+				$content .= alert("success", "BitCaptcha Keys has been changed successfully.");
+			}
+		}
+
+		$content .= "<form method='post' action='?p=as&c=7'>
+		<div class='form-group'>
+			<label>BitCaptcha ID (Non-WWW)</label>
+			<center><input class='form-control' type='text' value='".$bitCaptchaID1."' name='bitcaptchaid1' style='width: 375px;' placeholder='BitCaptcha ID (Non-WWW) ...'></center>
+		</div>
+		<div class='form-group'>
+			<label>BitCaptcha Private Key (Non-WWW)</label>
+			<center><input class='form-control' type='text' value='".$bitCaptchaPriKey1."' name='bitcaptchaprikey1' style='width: 375px;' placeholder='BitCaptcha Private Key (Non-WWW) ...'></center>
+		</div>
+		<div class='form-group'>
+			<label>BitCaptcha ID (WWW)</label>
+			<center><input class='form-control' type='text' value='".$bitCaptchaID2."' name='bitcaptchaid2' style='width: 375px;' placeholder='BitCaptcha ID (WWW) ...'></center>
+		</div>
+		<div class='form-group'>
+			<label>BitCaptcha Private Key (WWW)</label>
+			<center><input class='form-control' type='text' value='".$bitCaptchaPriKey2."' name='bitcaptchaprikey2' style='width: 375px;' placeholder='BitCaptcha Private Key (Non-WWw) ...'></center>
 		</div>
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
