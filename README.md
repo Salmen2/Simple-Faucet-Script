@@ -33,7 +33,7 @@ A demo is avaible: http://salmen.website/Faucet/
 
 # Fee
 
-A small fee of maximum 3 Satoshi will be sent to the owner for each claim.
+A small fee of 1 Satoshi will be sent to the owner for each claim. Remvoing license can be done by paying a one-time fee.
 
 # Terms and Conditions
 
