@@ -241,11 +241,11 @@ if($_SESSION['admin']){
 		<div class='form-group'>
 			<label class='radio-inline' for='radios-0'>
 				<input type='radio' ".(($captchaSelect == 1) ? 'checked=checked' : '')." id='radios-0' name='captchaselect' value='1'>
-				BitCaptcha
+				reCaptcha
 			</label>
 			<label class='radio-inline' for='radios-1'>
 				<input type='radio' ".(($captchaSelect == 2) ? 'checked=checked' : '')." id='radios-1' name='captchaselect' value='2'>
-				reCaptcha
+				BitCaptcha
 			</label>
 			<label class='radio-inline' for='radios-2'>
 				<input type='radio' ".(($captchaSelect == 3) ? 'checked=checked' : '')." id='radios-2' name='captchaselect' value='3'>

@@ -48,7 +48,7 @@ INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
 (20, 'bitcaptcha_private_key', ''),
 (21, 'bitcaptcha_id_www', ''),
 (22, 'bitcaptcha_private_key_www', ''),
-(23, 'captcha_select', '1');
+(23, 'captcha_select', '2');
 
 CREATE TABLE IF NOT EXISTS `faucet_transactions` (
   `id` int(32) unsigned NOT NULL AUTO_INCREMENT,
