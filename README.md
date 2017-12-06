@@ -1,5 +1,5 @@
 # FaucetHub-Faucet
-Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. Use the reCaptcha version 2. Payments to the Account and withdraw over FaucetHub
+Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. Use the reCaptcha version 2 and BitCaptcha. Payments to the Account and withdraw over FaucetHub
 
 
 # Mininum Requirements
@@ -33,7 +33,7 @@ A demo is avaible: http://salmen.website/Faucet/
 
 # Fee
 
-A small fee of maximum 3 Satoshi will be sent to the owner for each claim.
+A small fee of 1 Satoshi will be sent to the owner for each claim. Remvoing license can be done by paying a one-time fee.
 
 # Terms and Conditions
 
