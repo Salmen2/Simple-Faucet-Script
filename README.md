@@ -4,7 +4,7 @@ Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. Use the reCaptcha v
 
 # Mininum Requirements
 
-- PHP >= 5.4 (tested on 5.6)
+- PHP >= 5.4 (tested on 5.6), please do not use PHP 7.0 or higher
 
 - MySQL
 
