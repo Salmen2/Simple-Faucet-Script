@@ -92,7 +92,6 @@ if($user){
 							$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Payout', '$payOutBTC', '$timestamp')");
 							$autoWithdraw = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '18'")->fetch_assoc()['value'];
 							if($autoWithdraw == "no"){
-								if(!$kXKUWkUqoFWP) exit(base64_decode("RG9uJ3Qgd2FzdGUgeW91ciB0aW1lLiBCdXkgYSBsaWNlbnNlIQ=="));
 								$mysqli->query("UPDATE faucet_user_list Set balance = balance + $payOutBTC, last_claim = '$timestamp' WHERE id = '{$user['id']}'");
 								$content .= alert("success", "You've claimed successfully ".$payOut." Satoshi.<br />You can claim again in ".$timer." minutes!");
 							} else {
