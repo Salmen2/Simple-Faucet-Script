@@ -1,5 +1,5 @@
 # FaucetHub-Faucet
-Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. Use the reCaptcha version 2 and BitCaptcha. Payments to the Account and withdraw over FaucetHub
+Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. Use the reCaptcha version 2. Payments to the Account and withdraw over FaucetHub
 
 
 # Mininum Requirements
@@ -33,7 +33,7 @@ A demo is avaible: http://salmen.website/Faucet/
 
 # Fee
 
-Free. No hidden fees are applied anymore.
+Free. No hidden fees are applied.
 
 # Terms and Conditions
 
