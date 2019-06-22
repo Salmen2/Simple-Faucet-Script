@@ -9,25 +9,6 @@ function toSatoshi($amount){
 	return $satoshi;
 }
 
-function CaptchaCheck($response)
-  {
-  global $mysqli;
-  $reCaptcha_privKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '8' LIMIT 1")->fetch_assoc()['value'];
-  $Captcha_url = 'https://www.google.com/recaptcha/api/siteverify';
-  $Captcha_data = array('secret' => $reCaptcha_privKey, 'response' => $response);
-
-  $Captcha_options = array(
-     'http' => array(
-              'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-              'method'  => 'POST',
-              'content' => http_build_query($Captcha_data),
-      ),
-  );
-  $Captcha_context  = stream_context_create($Captcha_options);
-  $Captcha_result = file_get_contents($Captcha_url, false, $Captcha_context);
-  return $Captcha_result;
-}
-
 function checkDirtyIp($ip){
 	
 		$ch = curl_init();

@@ -43,12 +43,7 @@ INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
 (15, 'referral_percent', '0'),
 (16, 'reverse_proxy', 'no'),
 (17, 'admin_login', ''),
-(18, 'auto_withdraw', 'no'),
-(19, 'bitcaptcha_id', ''),
-(20, 'bitcaptcha_private_key', ''),
-(21, 'bitcaptcha_id_www', ''),
-(22, 'bitcaptcha_private_key_www', ''),
-(23, 'captcha_select', '2');
+(18, 'auto_withdraw', 'no');
 
 CREATE TABLE IF NOT EXISTS `faucet_transactions` (
   `id` int(32) unsigned NOT NULL AUTO_INCREMENT,

@@ -50,19 +50,13 @@ if($user){
 		if($_POST['verifykey'] == $user['claim_cryptokey']){
 			$mysqli->query("UPDATE faucet_user_list Set claim_cryptokey = '' WHERE id = '{$user['id']}'");
 
-			if($_POST['captchaType'] == 1){
-				$CaptchaCheck = json_decode(CaptchaCheck($_POST['g-recaptcha-response']))->success;
-			} else if($_POST['captchaType'] == 2){
-				$bitCaptchaID1 = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '19' LIMIT 1")->fetch_assoc()['value'];
-				$bitCaptchaID2 = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '21' LIMIT 1")->fetch_assoc()['value'];
-				$bitCaptchaPriKey1 = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '20' LIMIT 1")->fetch_assoc()['value'];
-				$bitCaptchaPriKey2 = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '22' LIMIT 1")->fetch_assoc()['value'];
-				$sqnId  = ((strpos($_SERVER['HTTP_HOST'],'ww.')>0)?$bitCaptchaID2:$bitCaptchaID1);
-				$sqnKey = ((strpos($_SERVER['HTTP_HOST'],'ww.')>0)?$bitCaptchaPriKey2:$bitCaptchaPriKey1);
-				$CaptchaCheck = sqn_validate($_POST['sqn_captcha'],$sqnKey,$sqnId);
-			}
+			$reCaptcha_privKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '8' LIMIT 1")->fetch_assoc()['value'];
+			$recaptcha = new \ReCaptcha\ReCaptcha($reCaptcha_privKey);
 
-			if(!$CaptchaCheck){
+			$respCaptcha = $recaptcha->verify($_POST['g-recaptcha-response']);
+
+
+			if(!$respCaptcha->isSuccess()){
 				$content .= alert("danger", "Captcha is wrong. <a href='index.php'>Try again</a>.");
 			} else {
 				$VPNShield = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '14' LIMIT 1")->fetch_assoc()['value'];
@@ -84,8 +78,8 @@ if($user){
 							srand((double)microtime()*1000000);
 							$payOut = rand($minReward, $maxReward);
 
-							$kXKUWkUCoFWP = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
-							$nXKUWkUJoFWP = new FaucetHub($kXKUWkUCoFWP, "BTC");
+							$fhAPIKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
+							$fhConn = new FaucetHub($fhAPIKey, "BTC");
 							$payOutBTC = $payOut / 100000000;
 							$timestamp = time();
 
@@ -95,7 +89,7 @@ if($user){
 								$mysqli->query("UPDATE faucet_user_list Set balance = balance + $payOutBTC, last_claim = '$timestamp' WHERE id = '{$user['id']}'");
 								$content .= alert("success", "You've claimed successfully ".$payOut." Satoshi.<br />You can claim again in ".$timer." minutes!");
 							} else {
-								$result = $nXKUWkUJoFWP->send($user['address'], $payOut, $realIpAddressUser);
+								$result = $fhConn->send($user['address'], $payOut, $realIpAddressUser);
 								if($result["success"] === true){
 									$content .= alert("success", $payOut." Satoshi was paid to your FaucetHub Account.<br />You can claim again in ".$timer." minutes!");
 									$mysqli->query("UPDATE faucet_user_list Set last_claim = '$timestamp' WHERE id = '{$user['id']}'");
