@@ -1,6 +1,6 @@
 <?php
 session_start();
-// error_reporting(0);
+error_reporting(0);
 include("config.php");
 include("session.php");
 include("template.class.php");
