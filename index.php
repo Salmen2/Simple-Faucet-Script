@@ -11,6 +11,44 @@ if($user){
 
 	$content .= "<a href='account.php' class='btn btn-primary'>Account/Stats/Withdraw</a><br /><br />";
 
+	$expressCryptoApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '10'")->fetch_assoc()['value'];
+	$expressCryptoUserToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '18'")->fetch_assoc()['value'];
+
+	if($expressCryptoApiToken AND $expressCryptoUserToken AND !$user['ec_userid']){
+		if($_POST['ec_usrid']){
+			if(!isset($_POST['token']) || $_POST['token'] !== $_SESSION['token']) {
+			unset($_SESSION['token']);
+			$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+			exit;
+			}
+			unset($_SESSION['token']);
+			$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+
+			
+			$pECUsrID = $mysqli->real_escape_string($_POST['ec_usrid']);
+			if(substr($pECUsrID, 0,10) != "EC-UserId-"){
+				$content .= alert("danger", "Wrong User ID. Please try again.<br /><strong>Important:</strong> Please enter firstly your ExpressCrypto User ID. <button type='button' onclick='showform()' class='btn btn-primary btn-xs'>Continue</button>
+				<form class='form-inline' id='ecform' style='display:none;' method='post' action=''><input type='hidden' name='token' value='".$_SESSION['token']."'/> <input type='text' class='form-control' style='width:140px;' name='ec_usrid' placeholder='EC User ID ...'> <button type='submit' class='btn btn-default'>Save</button></form>
+				<script>
+				function showform(){
+					document.getElementById(\"ecform\").style.display = \"block\";
+				}
+				</script>");
+			} else {
+				$mysqli->query("UPDATE faucet_user_list Set ec_userid = '$pECUsrID' WHERE id = '{$user['id']}'");
+				$content .= alert("success", "EC User ID saved. Happy claiming!");
+			}
+		} else {
+			$content .= alert("warning", "<strong>Important:</strong> Please enter firstly your ExpressCrypto User ID. <button type='button' onclick='showform()' class='btn btn-primary btn-xs'>Continue</button>
+			<form class='form-inline' id='ecform' style='display:none;' method='post' action=''><input type='hidden' name='token' value='".$_SESSION['token']."'/> <input type='text' class='form-control' style='width:140px;' name='ec_usrid' placeholder='EC User ID ...'> <button type='submit' class='btn btn-default'>Save</button></form>
+			<script>
+			function showform(){
+				document.getElementById(\"ecform\").style.display = \"block\";
+			}
+			</script>");
+		}
+	}
+
 	$claimStatus = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '11' LIMIT 1")->fetch_assoc()['value'];
 
 	if($claimStatus == "yes"){
@@ -60,7 +98,8 @@ if($user){
 				$content .= alert("danger", "Captcha is wrong. <a href='index.php'>Try again</a>.");
 			} else {
 				$VPNShield = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '14' LIMIT 1")->fetch_assoc()['value'];
-				if(checkDirtyIp($realIpAddressUser) == true AND $VPNShield == "yes"){
+				$iphubApiKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '22' LIMIT 1")->fetch_assoc()['value'];
+				if(checkDirtyIp($realIpAddressUser, $iphubApiKey) == true AND $VPNShield == "yes"){
 					$content .= alert("danger", "VPN/Proxy/Tor is not allowed on this faucet.<br />Please disable and <a href='index.php'>try again</a>.");
 				} else {
 					$nextClaim2 = time() - ($timer * 60);
@@ -209,6 +248,9 @@ if($user){
 	<button type='submit' class='btn btn-primary'>Join</button>
 	</form> ";
 }
+
+if(isset($_GET['fapi']))
+	faucetInfo($mysqli);
 
 $tpl->assign("content", $content);
 $tpl->display();

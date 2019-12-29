@@ -1,6 +1,5 @@
-# FaucetHub-Faucet
-Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. Use the reCaptcha version 2 and BitCaptcha. Payments to the Account and withdraw over FaucetHub
-
+# Simple Faucet Script
+Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. It uses the service of Google reCaptcha (v2; box) and IPHub. Any claims will be saved in the account balance and can be withdrawn to ExpressCrypto, FaucetPay or directly using Block.io
 
 # Mininum Requirements
 
@@ -37,4 +36,4 @@ Free. No hidden fees are applied anymore.
 
 # Terms and Conditions
 
-You have the rights to modify the code, as long you do not remove the license.
+You have the rights to modify the code, as long as you do not remove the license.

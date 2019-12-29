@@ -9,17 +9,16 @@ function toSatoshi($amount){
 	return $satoshi;
 }
 
-function checkDirtyIp($ip){
-	
+function checkDirtyIp($ip, $apiKey){
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_TIMEOUT, "10");
-		curl_setopt($ch, CURLOPT_URL, "http://v1.nastyhosts.com/".$ip);
+		curl_setopt($ch, CURLOPT_URL, "http://v2.api.iphub.info/ip/".$ip);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-Key: '.$apiKey));
 		$response=curl_exec($ch);
-	
 		curl_close($ch);
-	  $nastyArray = json_decode($response);
-		if($nastyArray->suggestion == "deny"){
+	  $iphub = json_decode($response);
+		if($iphub->block >= 1){
 			return true;
 		} else {
 			return false;
@@ -165,4 +164,53 @@ function findTimeAgo($past) {
 
     return $timeAgo." ago";
   }
+
+function faucetInfo($mysqli){
+  $jsonArray = array();
+
+  $jsonArray['api_version'] = 1;
+  $jsonArray['script'] = 1;
+  $jsonArray['site_name'] = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '1'")->fetch_assoc()['value'];
+  $jsonArray['site_url'] = $Website_Url;
+  $jsonArray['rewards']['minimum'] = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '6'")->fetch_assoc()['value'];
+  $jsonArray['rewards']['maximum'] = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '7'")->fetch_assoc()['value'];
+  $jsonArray['timer'] = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '5'")->fetch_assoc()['value'];
+
+
+  $claimAvail1 = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '11'")->fetch_assoc()['value'];
+  if($claimAvail1 == "yes")
+      $jsonArray['claim_available'][0] = true;
+    else
+      $jsonArray['claim_available'][0] = false;
+
+  $claimAvail2 = $mysqli->query("SELECT COUNT(id) FROM faucet_transactions WHERE type = 'Withdraw'")->fetch_row()[0];
+  if($claimAvail2 >= 1)
+      $jsonArray['claim_available'][1] = true;
+    else
+      $jsonArray['claim_available'][1] = false;
+
+
+  $jsonArray['referral_commission'] = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '15'")->fetch_assoc()['value'];
+
+  $expressCryptoApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '10'")->fetch_assoc()['value'];
+  $expressCryptoUserToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '18'")->fetch_assoc()['value'];
+  $faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
+  $blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
+  $blockioPin = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '21'")->fetch_assoc()['value'];
+
+  if($expressCryptoApiToken AND $expressCryptoUserToken)
+    $availableWithdrawalMethods .= "ec,";
+
+  if($faucetpayApiToken)
+    $availableWithdrawalMethods .= "fp,";
+
+  if($blockioApiKey AND $blockioPin)
+    $availableWithdrawalMethods .= "direct,";
+
+  $jsonArray['withdrawal_methods'] = rtrim($availableWithdrawalMethods, ",");
+
+  header('Content-Type: application/json');
+  echo json_encode($jsonArray, JSON_PRETTY_PRINT);
+  exit;
+}
 ?>

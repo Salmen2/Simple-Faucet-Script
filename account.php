@@ -11,35 +11,125 @@ if($user){
 	$content .= "<h3>Balance</h3>";
 	$content .= toSatoshi($user['balance'])." Satoshi<br /><br />";
 
-	if(toSatoshi($user['balance']) >= 1){
-		if($_GET['pt'] == 1){
-			if(!isset($_POST['token']) || $_POST['token'] !== $_SESSION['token']) {
-			unset($_SESSION['token']);
-			$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
-			exit;
-			}
-			unset($_SESSION['token']);
-			$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+	$expressCryptoApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '10'")->fetch_assoc()['value'];
+	$expressCryptoUserToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '18'")->fetch_assoc()['value'];
+	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
+	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
+	$blockioPin = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '21'")->fetch_assoc()['value'];
 
-			$api_key = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
-			$currency = "BTC";
-			$faucethub = new FaucetHub($api_key, $currency);
-			$result = $faucethub->send($user['address'], toSatoshi($user['balance']), $realIpAddressUser);
-			if($result["success"] === true){
-				$timestamp = time();
-				$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
-				$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', '$timestamp')");
-			    $content .= $result["html"];
+
+	if($expressCryptoApiToken AND $expressCryptoUserToken)
+			$expressCryptoWithdrawal = true;
+		else
+			$expressCryptoWithdrawal = false;
+
+	if($faucetpayApiToken)
+			$faucetPayWithdrawal = true;
+		else
+			$faucetPayWithdrawal = false;
+
+	if($blockioApiKey AND $blockioPin)
+			$blockioWithdrawal = true;
+		else
+			$blockioWithdrawal = false;
+
+
+	if($expressCryptoWithdrawal == true OR $faucetPayWithdrawal == true OR $blockioWithdrawal == true){
+
+		if($_GET['withdr']){
+			if($_GET['withdr'] == "ec"){
+				if(toSatoshi($user['balance']) < $thresholdGateway){
+					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdGateway." Satoshis.");
+				} else {
+					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
+					$expressCrypto = new ExpressCrypto($expressCryptoApiToken, $expressCryptoUserToken, $realIpAddressUser);
+					$result = $expressCrypto->sendPayment($user['ec_userid'], "BTC", toSatoshi($user['balance']));
+					if($result['status'] == 200){
+						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', '$timestamp')");
+						$content .= alert("success", $result['message']);
+					} else {
+						$mysqli->query("UPDATE faucet_user_list Set balance = '{$user['balance']}' WHERE id = '{$user['id']}'");
+						$content .= alert("danger", $result['message']);
+					}
+				}
+			} else if($_GET['withdr'] == "fp"){
+				if(toSatoshi($user['balance']) < $thresholdGateway){
+					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdGateway." Satoshis.");
+				} else {
+					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
+					$faucetpay = new FaucetPay($faucetpayApiToken, "BTC");
+					$result = $faucetpay->send($user['address'], toSatoshi($user['balance']));
+					if($result["success"] === true){
+						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', '$timestamp')");
+						$content .= $result["html"];
+					} else {
+						$mysqli->query("UPDATE faucet_user_list Set balance = '{$user['balance']}' WHERE id = '{$user['id']}'");
+						$content .= $result["html"];
+					}
+				}
+			} else if($_GET['withdr'] == "direct"){
+
+				if(toSatoshi($user['balance']) < $thresholdDirect){
+					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdDirect." Satoshis.");
+				} else {
+					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
+
+					$version = 2;
+					$block_io = new BlockIo($blockioApiKey, $blockioPin, $version);
+
+					$WithdrawData = $block_io->withdraw(array('amounts' => $user['balance'], 'to_addresses' => $user['address'], 'priority' => 'low'));
+
+					if($WithdrawData->status == "success"){
+						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', '$timestamp')");
+						$TXID = $WithdrawData->data->txid;
+						$content .= alert("success", "Withdrawal successful. TXID: ".$TXID);
+					} else {
+						$mysqli->query("UPDATE faucet_user_list Set balance = '{$user['balance']}' WHERE id = '{$user['id']}'");
+						$content .= alert("danger", "Unexpected error occured.");
+					}
+				}
+
+			}
+		} else {
+			$withdrawalAvailable = false;
+
+			$thresholdGateway = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '23'")->fetch_assoc()['value'];
+			if($expressCryptoWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdGateway){
+				$withdrawalButtonLink .= '<li><a href="account.php?withdr=ec">ExpressCrypto</a></li>';
+				$withdrawalAvailable = true;
+			}
+
+			if($faucetPayWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdGateway){
+				$withdrawalButtonLink .= '<li><a href="account.php?withdr=fp">FaucetPay</a></li>';
+				$withdrawalAvailable = true;
+			}
+			
+
+			$thresholdDirect = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '24'")->fetch_assoc()['value'];
+			if($blockioWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdDirect){
+				$withdrawalButtonLink .= '<li><a href="account.php?withdr=direct">Direct</a></li>';
+				$withdrawalAvailable = true;
+			}
+
+			if($withdrawalAvailable == false){
+				$thresholdAlert = ($thresholdDirect < $thresholdGateway) ? $thresholdDirect : $thresholdGateway;
+				$content .= alert("info", "Withdrawal threshold of ".$thresholdAlert." Satoshis hasn't been reached yet.");
 			} else {
-			    $content .= $result["html"];
+				$content .= '<div class="btn-group">
+				  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				    Withdraw <span class="caret"></span>
+				  </button>
+				  <ul class="dropdown-menu">
+				    '.$withdrawalButtonLink.'
+				  </ul>
+				</div><br />';
 			}
 		}
 
-		$content .= "<form method='post' action='?pt=1'>
-		<input type='hidden' name='token' value='".$_SESSION['token']."'/><button type='submit' class='btn btn-primary'>Withdraw to Faucethub</button></form>";
 	} else {
-		$content .= "<a href='#' class='btn btn-danger'>Withdraw is not avaible.</a>";
+		$content .= alert("warning", "The site owner hasn't configured the withdrawal methods yet.");
 	}
+	
 	$content .= "<br /><br />";
 
 	// Total Stats

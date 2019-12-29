@@ -66,6 +66,7 @@ if($_SESSION['admin']){
 		</div>
 		</div><br /><h2>Configuration</h2>
 		<a class='btn btn-default' href='?p=as'>Standard settings</a><br />
+		<a class='btn btn-default' href='?p=wds'>Withdrawal settings</a><br />
 		<a class='btn btn-default' href='?p=ps'>Page settings</a><br />
 		<a class='btn btn-default' href='?p=ads'>Advertising settings</a><br />
 
@@ -222,31 +223,62 @@ if($_SESSION['admin']){
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
-		$content .= "<h3>Keys settings</h3><h4>Faucethub Key</h4>";
+		$content .= "<h3>Style Settings</h3><h4>Bootswatch</h4>";
 
-		$faucethubkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '10' LIMIT 1")->fetch_assoc()['value'];
+		$selectedTheme = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '25' LIMIT 1")->fetch_assoc()['value'];
 
-		if($_GET['c'] == 5){
-			if(!$_POST['faucethubkey']){
-				$content .= alert("danger", "Key can't be blank.");
-			} else {
-				$faucethubkey5 = $mysqli->real_escape_string($_POST['faucethubkey']);
-
-				$mysqli->query("UPDATE faucet_settings Set value = '$faucethubkey5' WHERE id = '10'");
-				$content .= alert("success", "Faucethub Key was changed successfully.");
-				$faucethubkey = $faucethubkey5;
+		if($_GET['c'] == "st"){
+			if($_POST['selected_style']){
+				if($_POST['selected_style'] == "Default"){
+					$mysqli->query("UPDATE faucet_settings Set value = '' WHERE id = '25'");
+					$content .= alert("success", "Theme changed to Default.");
+					$selectedTheme = "";
+				} else {
+					$pSelectedStyle = $_POST['selected_style'];
+					if(in_array($pSelectedStyle, $bootsWatchStyles) == false){
+						$content .= alert("danger", "Invalid Bootswatch theme.");
+					} else {
+						$mysqli->query("UPDATE faucet_settings Set value = '$pSelectedStyle' WHERE id = '25'");
+						$content .= alert("success", "Theme changed to ".$pSelectedStyle.".");
+						$selectedTheme = $pSelectedStyle;
+					}
+				}
 			}
 		}
 
-		$content .= "<form method='post' action='?p=as&c=5'>
+		foreach ($bootsWatchStyles as $themeName) {
+			$optionsBootsWatch .= "<option ".(($themeName == $selectedTheme) ? 'selected' : '').">".$themeName."</option>";
+		}
+
+
+		$content .= "<form method='post' action='?p=as&c=st'>
 		<div class='form-group'>
-			<label>Faucethub Key</label>
-			<center><input class='form-control' type='text' name='faucethubkey' style='width: 275px;' value='$faucethubkey' placeholder='FaucetHub Key'></center>
+		  <label class='control-label'>Bootswatch Theme</label>
+		  <center>
+		    <select style='width: 150px;' name='selected_style' class='form-control bootswatchInput'>
+		      <option>Default</option>
+		      ".$optionsBootsWatch."
+		    </select>
+		    <span class='help-block demoBootsWatch'><a target='_blank' href='".(($selectedTheme != "Default") ? 'https://bootswatch.com/3/'.(strtolower($selectedTheme)).'/' : '#')."'>Demo</a></span>
+		    <script>
+		    $(document).ready(function(){
+		    	$('.bootswatchInput').change(function(){
+		    		var selectedTheme = $(this).val();
+		    		selectedTheme = selectedTheme.toLowerCase();
+		    		if(selectedTheme == 'default'){
+		    			$('.demoBootsWatch').html('<a target=\"_blank\" href=\"\">Demo</a>');
+		    		} else {
+		    			$('.demoBootsWatch').html('<a target=\"_blank\" href=\"https://bootswatch.com/3/' + selectedTheme + '/\">Demo</a>');
+		    		}
+		    	});
+		    });
+		    </script>
+		  </center>
 		</div>
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
-		$content .= "<h4>reCaptcha Keys</h4>";
+		$content .= "<h3>Keys settings</h3><h4>reCaptcha Keys</h4>";
 
 		$reCaptcha_privkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '8' LIMIT 1")->fetch_assoc()['value'];
 		$reCaptcha_pubkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '9' LIMIT 1")->fetch_assoc()['value'];
@@ -299,10 +331,11 @@ if($_SESSION['admin']){
 			}
 		}
 
-		$content .= "<h4>VPN/Proxy</h4>
+		$content .= "<br /><br /><h4>VPN/Proxy</h4>
 		<p>Enable or disable claiming from faucet using VPN or Proxy</p>";
 
 		$shieldStatus = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '14' LIMIT 1")->fetch_assoc()['value'];
+		$iphubApiKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '22' LIMIT 1")->fetch_assoc()['value'];
 
 		if($shieldStatus == "yes"){
 			if($_GET['sp'] == "n"){
@@ -314,38 +347,34 @@ if($_SESSION['admin']){
 			}
 		} else if($shieldStatus == "no"){
 			if($_GET['sp'] == "y"){
-				$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '14'");
-				$content .= alert("success", "VPN/Proxy Shield is enabled.");
-				$content .= "<a href='?p=as&sp=n' class='btn btn-default'>Disable Shield</a>";
+				if(!$iphubApiKey){
+					$content .= alert("warning", "Please enter firstly the IPHub API Key below.");
+				} else {
+					$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '14'");
+					$content .= alert("success", "VPN/Proxy Shield is enabled.");
+					$content .= "<a href='?p=as&sp=n' class='btn btn-default'>Disable Shield</a>";
+				}
 			} else {
 				$content .= "<a href='?p=as&sp=y' class='btn btn-default'>Enable Shield</a>";
 			}
 		}
 
-		// Auto Withdraw
 
-		$content .= "<h4>Auto Withdraw</h4>
-		<p>Enable this feature for auto withdrawal after payout to Faucethub</p>";
-
-		$reverseProxyStatus = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '18' LIMIT 1")->fetch_assoc()['value'];
-
-		if($reverseProxyStatus == "yes"){
-			if($_GET['auwi'] == "n"){
-				$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '18'");
-				$content .= alert("success", "Auto Withdraw is disabled.");
-				$content .= "<a href='?p=as&auwi=y' class='btn btn-default'>Enable Auto Withdraw</a>";
-			} else {
-				$content .= "<a href='?p=as&auwi=n' class='btn btn-default'>Disable Auto Withdraw</a>";
-			}
-		} else if($reverseProxyStatus == "no"){
-			if($_GET['auwi'] == "y"){
-				$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '18'");
-				$content .= alert("success", "Auto Withdraw is enabled.");
-				$content .= "<a href='?p=as&auwi=n' class='btn btn-default'>Disable Auto Withdraw</a>";
-			} else {
-				$content .= "<a href='?p=as&auwi=y' class='btn btn-default'>Enable Auto Withdraw</a>";
+		if($_GET['c'] == 7){
+			if(isset($_POST['iphub_apikey'])){
+				$iphubApiKey = $mysqli->real_escape_string($_POST['iphub_apikey']);
+				$mysqli->query("UPDATE faucet_settings Set value = '$iphubApiKey' WHERE id = '22'");
+				$content .= alert("success", "The API has been changed successfully.");
 			}
 		}
+
+		$content .= "<br /><p>The VPN/Proxy shield requires an API Key of IPHub.info.</p><br /><form method='post' action='?p=as&c=7'>
+		<div class='form-group'>
+			<label>IPHub API Key</label>
+			<center><input class='form-control' type='text' value='".$iphubApiKey."' name='iphub_apikey' style='width: 375px;' placeholder='IPHub API Key'></center>
+		</div>
+		<button type='submit' class='btn btn-primary'>Change</button>
+		</form><br />";
 
 
 		// Reverse proxy
@@ -376,7 +405,7 @@ if($_SESSION['admin']){
 		break;
 
 		case("ps"):
-		$content .= "<h3>Page settings</h3><h4>Create new Page</h4>";
+		$content .= "<a href='admin.php'>Back</a><br><h3>Page settings</h3><h4>Create new Page</h4>";
 
 		if($_GET['cr'] == "y"){
 			if(!$_POST['name']){
@@ -468,10 +497,195 @@ if($_SESSION['admin']){
 </div>";
 	break;
 
+	case("wds"):
+
+	$content .= "<a href='admin.php'>Back</a><br>
+	<h3>Withdrawal settings</h3><br /><p><strong>Note:</strong> If you leave the fields blank for a particular withdrawal method, then that option won't appear  on the Account page.</p><br />
+	<script type='text/javascript'>
+	$('#myTabs a').click(function (e) {
+	  e.preventDefault()
+	  $(this).tab('show')
+	});
+	</script>";
+
+	$expressCryptoApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '10'")->fetch_assoc()['value'];
+	$expressCryptoUserToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '18'")->fetch_assoc()['value'];
+	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
+	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
+	$blockioPin = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '21'")->fetch_assoc()['value'];
+
+	if($_POST['withdrawal_method']){
+		if($_POST['withdrawal_method'] == 1){
+			if($_POST['api_key'] != $expressCryptoApiToken){
+				$expressCryptoApiToken = $mysqli->real_escape_string($_POST['api_key']);
+				$mysqli->query("UPDATE faucet_settings Set value = '$expressCryptoApiToken' WHERE id = '10'");
+				$alertForm .= alert("success", "ExpressCrypto API Key has been changed.");
+			}
+
+			if($_POST['user_token'] != $expressCryptoUserToken){
+				$expressCryptoUserToken = $mysqli->real_escape_string($_POST['user_token']);
+				$mysqli->query("UPDATE faucet_settings Set value = '$expressCryptoUserToken' WHERE id = '18'");
+				$alertForm .= alert("success", "ExpressCrypto User Token has been changed.");
+			}
+		} else if($_POST['withdrawal_method'] == 2){
+			if($_POST['api_key'] != $faucetpayApiToken){
+				$faucetpayApiToken = $mysqli->real_escape_string($_POST['api_key']);
+				$mysqli->query("UPDATE faucet_settings Set value = '$faucetpayApiToken' WHERE id = '19'");
+				$alertForm .= alert("success", "FaucetPay API Key has been changed.");
+			}
+		} else if($_POST['withdrawal_method'] == 3){
+			if($_POST['api_key'] != $blockioApiKey){
+				$blockioApiKey = $mysqli->real_escape_string($_POST['api_key']);
+				$mysqli->query("UPDATE faucet_settings Set value = '$blockioApiKey' WHERE id = '20'");
+				$alertForm .= alert("success", "Block.io API Key has been changed.");
+			}
+
+			if($_POST['pin'] != $blockioPin){
+				$blockioPin = $mysqli->real_escape_string($_POST['pin']);
+				$mysqli->query("UPDATE faucet_settings Set value = '$blockioPin' WHERE id = '21'");
+				$alertForm .= alert("success", "Block.io PIN has been changed.");
+			}
+		}
+	}
+
+	$thresholdGateway = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '23'")->fetch_assoc()['value'];
+	$thresholdDirect = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '24'")->fetch_assoc()['value'];
+
+
+	if($_POST['threshold_gateway']){
+		if($_POST['threshold_gateway'] != $thresholdGateway OR $_POST['threshold_direct'] != $thresholdDirect){
+			$pThreSholdGateway = $mysqli->real_escape_string($_POST['threshold_gateway']);
+			$pThreSholdDirect = $mysqli->real_escape_string($_POST['threshold_direct']);
+
+			if(!is_numeric($pThreSholdGateway) OR !is_numeric($pThreSholdDirect)){
+				$alertFormThreshold = alert("danger", "Please enter numeric values.");
+			} else {
+				$mysqli->query("UPDATE faucet_settings Set value = '$pThreSholdGateway' WHERE id = '23'");
+				$mysqli->query("UPDATE faucet_settings Set value = '$pThreSholdDirect' WHERE id = '24'");
+				$alertFormThreshold = alert("success", "Withdrawal threshold saved.");
+
+				$thresholdGateway = $pThreSholdGateway;
+				$thresholdDirect = $pThreSholdDirect;
+			}
+		}
+	}
+
+
+	$content .= $alertForm."
+
+			<div>
+
+	  <!-- Nav tabs -->
+	  <ul class=\"nav nav-tabs\" role=\"tablist\">
+	    <li role=\"presentation\" class=\"active\"><a href=\"#expresscryptotab\" aria-controls=\"expresscryptotab\" role=\"tab\" data-toggle=\"tab\">ExpressCrypto</a></li>
+	    <li role=\"presentation\"><a href=\"#faucetpaytab\" aria-controls=\"faucetpaytab\" role=\"tab\" data-toggle=\"tab\">FaucetPay</a></li>
+	    <li role=\"presentation\"><a href=\"#blockiotab\" aria-controls=\"blockiotab\" role=\"tab\" data-toggle=\"tab\">Block.io</a></li>
+	  </ul><br />
+
+	  <!-- Tab panes -->
+	  <div class=\"tab-content\">
+
+		<div role=\"tabpanel\" class=\"tab-pane active\" id=\"expresscryptotab\">
+			<form method='post' class='form-horizontal' action='?p=wds'>
+
+				<div class='form-group'>
+					<label class='col-md-3 control-label'>API Key</label>
+					<div class='col-md-8'>
+						<input type='text' class='form-control' name='api_key' value='".$expressCryptoApiToken."' placeholder='API Key ...' />
+					</div>
+				</div><br />
+
+				<div class='form-group'>
+					<label class='col-md-3 control-label'>User Token</label>
+					<div class='col-md-8'>
+						<input type='text' class='form-control' name='user_token' value='".$expressCryptoUserToken."' placeholder='User Token ...' />
+					</div>
+				</div><br />
+
+				<p>You can generate an API Key at <a href='https://expresscrypto.io/' target='_blank'>Expresscrypto.io</a>.</p><br />
+
+				<input type='hidden' name='withdrawal_method' value='1' />
+				<button type='submit' class='btn btn-success'>Save</button>
+			</form>
+		</div>
+
+		<div role=\"tabpanel\" class=\"tab-pane\" id=\"faucetpaytab\">
+			<form method='post' class='form-horizontal' action='?p=wds'>
+
+				<div class='form-group'>
+					<label class='col-md-3 control-label'>API Key</label>
+					<div class='col-md-8'>
+						<input type='text' class='form-control' name='api_key' value='".$faucetpayApiToken."' placeholder='API Key ...' />
+					</div>
+				</div><br />
+
+				<p>You can generate an API Key at <a href='https://faucetpay.io/' target='_blank'>Faucetpay.io</a>.</p><br />
+
+				<input type='hidden' name='withdrawal_method' value='2' />
+				<button type='submit' class='btn btn-success'>Save</button>
+			</form>
+		</div>
+
+		<div role=\"tabpanel\" class=\"tab-pane\" id=\"blockiotab\">
+			<form method='post' class='form-horizontal' action='?p=wds'>
+
+				<div class='form-group'>
+					<label class='col-md-3 control-label'>API Key</label>
+					<div class='col-md-8'>
+						<input type='text' class='form-control' name='api_key' value='".$blockioApiKey."' placeholder='API Key ...' />
+					</div>
+				</div><br />
+
+				<div class='form-group'>
+					<label class='col-md-3 control-label'>PIN</label>
+					<div class='col-md-8'>
+						<input type='text' class='form-control' name='pin' value='".$blockioPin."' placeholder='PIN ...' />
+					</div>
+				</div><br />
+
+				<p>You can generate an API Key at <a href='https://block.io/' target='_blank'>Block.io</a>.</p><br />
+
+				<input type='hidden' name='withdrawal_method' value='3' />
+				<button type='submit' class='btn btn-success'>Save</button>
+			</form>
+		</div><br /><br />
+
+		<h4>Withdrawal Thresholds</h4><br />
+
+		".$alertFormThreshold."<br />
+
+		<form method='post' class='form-horizontal' action='?p=wds'>
+
+				<div class='form-group'>
+					<label class='col-md-5 control-label'>Withdrawal Threshold (Payment Provider)</label>
+					<div class='col-md-6'>
+						<input type='number' class='form-control' name='threshold_gateway' value='".$thresholdGateway."' placeholder='...' />
+						<span class='help-block'>Withdrawal thresholds for payments over ExpressCrypto and FaucetPay</span>
+					</div>
+				</div><br />
+
+				<div class='form-group'>
+					<label class='col-md-5 control-label'>Withdrawal Threshold (Direct)</label>
+					<div class='col-md-6'>
+						<input type='number' class='form-control' name='threshold_direct' value='".$thresholdDirect."' placeholder='...' />
+						<span class='help-block'>Withdrawal thresholds for direct payments using Block.io</span>
+					</div>
+				</div><br />
+
+				<button type='submit' class='btn btn-success'>Save</button>
+		</form>
+
+
+
+	  </div>
+	</div>";
+
+	break;
+
 	case("ads"):
 
 	$content .= "<a href='admin.php'>Back</a><br>
-	<h3>Admin Settings</h3><h4>Advertising settings</h4>";
+	<h3>Advertising settings</h3>";
 
 	$content .= "<h3>Space top</h4>";
 

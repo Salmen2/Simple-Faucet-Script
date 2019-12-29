@@ -8,7 +8,7 @@
     <title>{$faucetname}</title>
 
     <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="{$bootstrapStyle}" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -73,7 +73,7 @@
         <div class="row">
           <div class="col-md-12">
             <hr />
-            <span style="color: grey;">&copy; 2016 {$faucetname}</span>
+            <span style="color: grey;">&copy; 2016 - 2020 {$faucetname} - Developed by <a target="_blank" href="https://jaguarbitcoin.com/">JaguarBitcoin</a></span>
           </div>
         </div>
       </div>

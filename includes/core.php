@@ -6,7 +6,9 @@ include("session.php");
 include("template.class.php");
 include("template.settings.php");
 include("functions.php");
-include("faucethub.php");
+include("expresscrypto.library.php");
+include("faucetpay.library.php");
+include("blockio.library.php");
 include("rc/autoload.php");
 
 if(!$_COOKIE['refer']){
@@ -23,7 +25,7 @@ $reverseProxy = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '16'")-
 if($reverseProxy == "yes"){
 	// check whether IP is Cloudflare
 
-	$cloudFlareIpList = array("103.21.244.0", "103.22.200.0", "103.31.4.0", "104.16.0.0", "108.162.192.0", "131.0.72.0", "141.101.64.0", "162.158.0.0", "172.64.0.0", "173.245.48.0", "188.114.96.0", "190.93.240.0", "197.234.240.0", "198.41.128.0", "199.27.128.0");
+	$cloudFlareIpList = array("173.245.48.0", "103.21.244.0", "103.22.200.0", "103.31.4.0", "141.101.64.0", "108.162.192.0", "190.93.240.0", "188.114.96.0", "197.234.240.0", "198.41.128.0", "162.158.0.0", "104.16.0.0", "172.64.0.0", "131.0.72.0");
 
 	if(in_array($_SERVER['REMOTE_ADDR'], $cloudFlareIpList)){
 		if(filter_var($_SERVER["HTTP_CF_CONNECTING_IP"], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
