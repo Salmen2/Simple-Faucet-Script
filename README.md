@@ -32,7 +32,7 @@ A demo is avaible: http://salmen.website/Faucet/
 
 # Fee
 
-Free. No hidden fees are applied anymore.
+Free. No hidden fees are applied.
 
 # Terms and Conditions
 
