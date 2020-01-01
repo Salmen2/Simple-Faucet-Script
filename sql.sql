@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `faucet_settings` (
 ) ENGINE=MyISAM AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
 
 INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
-(1, 'faucet_name', 'FaucetHub Faucet'),
+(1, 'faucet_name', 'Simple Faucet Script'),
 (2, 'space_top', 'Space on the top'),
 (3, 'space_left', 'Space on the left side'),
 (4, 'space_right', 'Space on the right side'),
