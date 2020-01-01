@@ -3,9 +3,9 @@ Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. It uses the service
 
 # Mininum Requirements
 
-- PHP >= 5.4 (tested on 5.6), please do not use PHP 7.0 or higher
-
-- MySQL
+* PHP >= 5.4 (tested on 5.6), please do not use PHP 7.0 or higher
+* PHP Extensions: cURL and GMP
+* MySQL
 
 # Installation
 
