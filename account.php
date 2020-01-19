@@ -45,7 +45,7 @@ if($user){
 					$expressCrypto = new ExpressCrypto($expressCryptoApiToken, $expressCryptoUserToken, $realIpAddressUser);
 					$result = $expressCrypto->sendPayment($user['ec_userid'], "BTC", toSatoshi($user['balance']));
 					if($result['status'] == 200){
-						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', '$timestamp')");
+						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', UNIX_TIMESTAMP(NOW()))");
 						$content .= alert("success", $result['message']);
 					} else {
 						$mysqli->query("UPDATE faucet_user_list Set balance = '{$user['balance']}' WHERE id = '{$user['id']}'");
@@ -60,7 +60,7 @@ if($user){
 					$faucetpay = new FaucetPay($faucetpayApiToken, "BTC");
 					$result = $faucetpay->send($user['address'], toSatoshi($user['balance']));
 					if($result["success"] === true){
-						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', '$timestamp')");
+						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', UNIX_TIMESTAMP(NOW()))");
 						$content .= $result["html"];
 					} else {
 						$mysqli->query("UPDATE faucet_user_list Set balance = '{$user['balance']}' WHERE id = '{$user['id']}'");
@@ -80,7 +80,7 @@ if($user){
 					$WithdrawData = $block_io->withdraw(array('amounts' => $user['balance'], 'to_addresses' => $user['address'], 'priority' => 'low'));
 
 					if($WithdrawData->status == "success"){
-						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', '$timestamp')");
+						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', UNIX_TIMESTAMP(NOW()))");
 						$TXID = $WithdrawData->data->txid;
 						$content .= alert("success", "Withdrawal successful. TXID: ".$TXID);
 					} else {
