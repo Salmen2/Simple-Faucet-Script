@@ -35,7 +35,9 @@ if($user){
 
 
 	if($expressCryptoWithdrawal == true OR $faucetPayWithdrawal == true OR $blockioWithdrawal == true){
-
+		$thresholdGateway = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '23'")->fetch_assoc()['value'];
+		$thresholdDirect = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '24'")->fetch_assoc()['value'];
+		
 		if($_GET['withdr']){
 			if($_GET['withdr'] == "ec"){
 				if(toSatoshi($user['balance']) < $thresholdGateway){
