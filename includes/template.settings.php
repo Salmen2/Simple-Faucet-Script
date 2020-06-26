@@ -29,6 +29,12 @@ $tpl->assign("spaceright", $Spaceright);
 
 $navLinks = [["Faucet", "index.php"]];
 
+$addonListSQL = $mysqli->query("SELECT * FROM faucet_addon_list WHERE enabled = '1'");
+
+while($addonRow = $addonListSQL->fetch_assoc())
+	$navLinks[] = [$addonRow['name'], "page.php?p=".$addonRow['directory_name']];
+
+
 $PageQuery = $mysqli->query("SELECT * FROM faucet_pages");
 
 while($NavLinks = $PageQuery->fetch_assoc()){

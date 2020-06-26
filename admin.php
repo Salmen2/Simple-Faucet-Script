@@ -10,7 +10,25 @@ if($_SESSION['admin']){
 	$DatabaseAdminKey = "Admin_".$UserDB."_Password_".$PwDB;
 	if($AdminSessionKey != $DatabaseAdminKey){ unset($_SESSION['admin']); header("Location: admin.php"); die; }
 
+	// Addon list - Start
+
+	$directories = array_diff(scandir('addons'), array('..', '.'));
+
+	$addonList = array();
+
+	foreach($directories AS $directoryName){
+		if(file_exists("addons/".$directoryName."/__acp.php") == true AND file_exists("addons/".$directoryName."/__page.php") == true){
+			$addonList[] = $directoryName;
+			$btnContent = "<a class='btn btn-default' href='?p=".$directoryName."'>".ucfirst($directoryName)." settings</a><br />";
+		}
+	}
+
+	define('ADDON_ACTIVE', 1);
+
+	// Addon list - End
+
 	switch($_GET['p']){
+		case(""):
 		default:
 		// Total Stats
 
@@ -32,6 +50,7 @@ if($_SESSION['admin']){
 
 		$Last24HoursReferralPayout = $mysqli->query("SELECT SUM(amount) FROM faucet_transactions WHERE type = 'Referral Payout' AND timestamp > '$Last24Hours'")->fetch_row()[0];
 		$Last24HoursReferralPayout = $Last24HoursReferralPayout ? $Last24HoursReferralPayout : 0;
+
 		$content .= "<h2>Stats</h2>
 		<div class='row'>
 		<div class='col-md-12'>
@@ -69,6 +88,8 @@ if($_SESSION['admin']){
 		<a class='btn btn-default' href='?p=wds'>Withdrawal settings</a><br />
 		<a class='btn btn-default' href='?p=ps'>Page settings</a><br />
 		<a class='btn btn-default' href='?p=ads'>Advertising settings</a><br />
+		<a class='btn btn-default' href='?p=adds'>Addon settings</a><br />
+		".$btnContent."
 
 		<hr />
 
@@ -902,7 +923,59 @@ if($_SESSION['admin']){
 	}
 
 	break;
+
+	case("adds"):
+
+	$content .= "<a href='admin.php'>Back</a><br>
+	<h3>Addon Settings</h3>
+	<p>Enable or disable installed Addons below. Disabled addons will disappear for the users.</p>";
+
+	if(isset($_GET['sw'])){
+		$pSWID = $mysqli->real_escape_string($_GET['sw']);
+		$checkAddon = $mysqli->query("SELECT * FROM faucet_addon_list WHERE id = '$pSWID'");
+		if($checkAddon->num_rows == 1){
+			$addonData = $checkAddon->fetch_assoc();
+			if($addonData['enabled'] == 1){
+				$mysqli->query("UPDATE faucet_addon_list Set enabled = '0' WHERE id = '$pSWID'");
+				$content .= alert("info", "Addon '".$addonData['name']."' has been disabled.");
+			} else {
+				$mysqli->query("UPDATE faucet_addon_list Set enabled = '1' WHERE id = '$pSWID'");
+				$content .= alert("info", "Addon '".$addonData['name']."' has been enabled.");
+			}
+		}
 	}
+
+
+	$addonList = $mysqli->query("SELECT * FROM faucet_addon_list");
+
+	$content .= "<table class='table table-bordered' style='text-align: center; width: 100%;' border='0'>
+	  <thead>
+	    <tr>
+	      <td>Name</td>
+	      <td>Actions</td>
+	    </tr>
+	  </thead><tbody>";
+
+	while($addonRow = $addonList->fetch_assoc()){
+		if($addonRow['enabled'] == 1)
+				$status = "<span style='color:green;'>Enabled</span> <a href='?p=adds&sw=".$addonRow['id']."' class='btn btn-primary' role='button'>Disable</a>";
+			else
+				$status = "<span style='color:red;'>Disabled</span> <a href='?p=adds&sw=".$addonRow['id']."' class='btn btn-primary' role='button'>Enable</a>";
+		
+		$content .= "<tr><td>".$addonRow['name']."</td><td>".$status."</td></tr>";
+	}
+
+	$content .= "</tbody></table>";
+
+	break;
+
+
+	case(in_array($_GET['p'], $addonList)):
+		include("addons/".$_GET['p']."/__acp.php");
+	break;
+
+	}
+
 
 } else {
 	$content .= "<h3>Log In</h3>";

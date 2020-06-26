@@ -1,3 +1,10 @@
+CREATE TABLE IF NOT EXISTS `faucet_addon_list` (
+`id` int(32) unsigned NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `directory_name` varchar(50) NOT NULL,
+  `enabled` int(32) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 CREATE TABLE IF NOT EXISTS `faucet_banned_address` (
 `id` int(32) unsigned NOT NULL,
   `address` varchar(100) NOT NULL
@@ -69,6 +76,10 @@ CREATE TABLE IF NOT EXISTS `faucet_user_list` (
   `claim_cryptokey` varchar(75) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
+
+ALTER TABLE `faucet_addon_list`
+ ADD PRIMARY KEY (`id`);
+
 ALTER TABLE `faucet_banned_address`
  ADD PRIMARY KEY (`id`);
 
@@ -87,20 +98,18 @@ ALTER TABLE `faucet_transactions`
 ALTER TABLE `faucet_user_list`
  ADD PRIMARY KEY (`id`);
 
+
+ALTER TABLE `faucet_addon_list`
+MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `faucet_banned_address`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
-
 ALTER TABLE `faucet_banned_ip`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
-
 ALTER TABLE `faucet_pages`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
-
 ALTER TABLE `faucet_settings`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=26;
-
 ALTER TABLE `faucet_transactions`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
-
 ALTER TABLE `faucet_user_list`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
