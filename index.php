@@ -212,7 +212,7 @@ if($user){
 					exit;
 				} else {
 					$ip = $mysqli->real_escape_string($realIpAddressUser);
-					$mysqli->query("INSERT INTO faucet_user_list (address, ip_address, balance, joined, last_activity, referred_by) VALUES ('$Address', '$ip', '0', '$timestamp', '$timestamp', '$referID')");
+					$mysqli->query("INSERT INTO faucet_user_list (address, ec_userid, ip_address, balance, joined, last_activity, referred_by, last_claim, claim_cryptokey) VALUES ('$Address', '', '$ip', '0', '$timestamp', '$timestamp', '$referID', '0', '')");
 					$_SESSION['address'] = $Address;
 					header("Location: index.php");
 					exit;
