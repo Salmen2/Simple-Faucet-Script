@@ -19,7 +19,7 @@ if($_SESSION['admin']){
 	foreach($directories AS $directoryName){
 		if(file_exists("addons/".$directoryName."/__acp.php") == true AND file_exists("addons/".$directoryName."/__page.php") == true){
 			$addonList[] = $directoryName;
-			$btnContent = "<a class='btn btn-default' href='?p=".$directoryName."'>".ucfirst($directoryName)." settings</a><br />";
+			$btnContent .= "<a class='btn btn-default' href='?p=".$directoryName."'>".ucfirst($directoryName)." settings</a><br />";
 		}
 	}
 
