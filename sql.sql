@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS `faucet_settings` (
 
 INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
 (1, 'faucet_name', 'Simple Faucet Script'),
-(2, 'space_top', 'Space on the top'),
-(3, 'space_left', 'Space on the left side'),
-(4, 'space_right', 'Space on the right side'),
+(2, 'solvemedia_challenge_key', ''),
+(3, 'solvemedia_verification_key', ''),
+(4, 'solvemedia_auth_hash_key', ''),
 (5, 'timer', '60'),
 (6, 'min_reward', '1'),
 (7, 'max_reward', '100'),
@@ -55,6 +55,17 @@ INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
 (24, 'min_withdrawal_direct', '1'),
 (25, 'bootswatch_theme', '');
 
+CREATE TABLE IF NOT EXISTS `faucet_spaces` (
+`id` int(32) unsigned NOT NULL,
+  `name` varchar(15) NOT NULL,
+  `space` text NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+
+INSERT INTO `faucet_spaces` (`id`, `name`, `space`) VALUES
+(1, 'space_top', 'Space on the top'),
+(2, 'space_left', 'Space on the left side'),
+(3, 'space_right', 'Space on the right side');
+
 CREATE TABLE IF NOT EXISTS `faucet_transactions` (
 `id` int(32) unsigned NOT NULL,
   `userid` int(32) NOT NULL,
@@ -65,6 +76,7 @@ CREATE TABLE IF NOT EXISTS `faucet_transactions` (
 
 CREATE TABLE IF NOT EXISTS `faucet_user_list` (
 `id` int(32) unsigned NOT NULL,
+  `account_type` int(32) NOT NULL,
   `address` varchar(75) NOT NULL,
   `ec_userid` varchar(20) NOT NULL,
   `ip_address` varchar(50) NOT NULL,
@@ -92,6 +104,9 @@ ALTER TABLE `faucet_pages`
 ALTER TABLE `faucet_settings`
  ADD PRIMARY KEY (`id`);
 
+ALTER TABLE `faucet_spaces`
+ ADD PRIMARY KEY (`id`);
+
 ALTER TABLE `faucet_transactions`
  ADD PRIMARY KEY (`id`);
 
@@ -109,6 +124,8 @@ ALTER TABLE `faucet_pages`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `faucet_settings`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=26;
+ALTER TABLE `faucet_spaces`
+MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=4;
 ALTER TABLE `faucet_transactions`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `faucet_user_list`
