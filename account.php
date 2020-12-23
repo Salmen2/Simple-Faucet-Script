@@ -7,7 +7,7 @@ if($user){
 	$content .= "<h1>Account</h1>";
 
 	$content .= "<h3>Address</h3>";
-	$content .= $user['address'];
+	$content .= ($user['address']) ? $user['address'] : $user['ec_userid'];
 	$content .= "<h3>Balance</h3>";
 	$content .= toSatoshi($user['balance'])." Satoshi<br /><br />";
 
@@ -42,6 +42,8 @@ if($user){
 			if($_GET['withdr'] == "ec"){
 				if(toSatoshi($user['balance']) < $thresholdGateway){
 					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdGateway." Satoshis.");
+				} else if(!$user['ec_userid']){
+					$content .= alert("warning", "You cannot withdraw BTC to ExpressCrypto using a Bitcoin Account.");
 				} else {
 					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
 					$expressCrypto = new ExpressCrypto($expressCryptoApiToken, $expressCryptoUserToken, $realIpAddressUser);
@@ -57,6 +59,8 @@ if($user){
 			} else if($_GET['withdr'] == "fp"){
 				if(toSatoshi($user['balance']) < $thresholdGateway){
 					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdGateway." Satoshis.");
+				} else if(!$user['address']){
+					$content .= alert("warning", "You cannot withdraw BTC to FaucetPay using a ExpressCrypto Account.");
 				} else {
 					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
 					$faucetpay = new FaucetPay($faucetpayApiToken, "BTC");
@@ -70,9 +74,10 @@ if($user){
 					}
 				}
 			} else if($_GET['withdr'] == "direct"){
-
 				if(toSatoshi($user['balance']) < $thresholdDirect){
 					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdDirect." Satoshis.");
+				} else if(!$user['address']){
+					$content .= alert("warning", "You cannot withdraw BTC to FaucetPay using a ExpressCrypto Account.");
 				} else {
 					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
 
@@ -96,25 +101,32 @@ if($user){
 			$withdrawalAvailable = false;
 
 			$thresholdGateway = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '23'")->fetch_assoc()['value'];
-			if($expressCryptoWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdGateway){
+			if($expressCryptoWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdGateway AND $user['ec_userid']){
 				$withdrawalButtonLink .= '<li><a href="account.php?withdr=ec">ExpressCrypto</a></li>';
 				$withdrawalAvailable = true;
 			}
 
-			if($faucetPayWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdGateway){
+			if($faucetPayWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdGateway AND $user['address']){
 				$withdrawalButtonLink .= '<li><a href="account.php?withdr=fp">FaucetPay</a></li>';
 				$withdrawalAvailable = true;
 			}
 			
 
 			$thresholdDirect = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '24'")->fetch_assoc()['value'];
-			if($blockioWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdDirect){
+			if($blockioWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdDirect AND $user['address']){
 				$withdrawalButtonLink .= '<li><a href="account.php?withdr=direct">Direct</a></li>';
 				$withdrawalAvailable = true;
 			}
 
-			if($withdrawalAvailable == false){
-				$thresholdAlert = ($thresholdDirect < $thresholdGateway) ? $thresholdDirect : $thresholdGateway;
+			if($expressCryptoWithdrawal == false AND $user['ec_userid']){
+				$content .= alert("info", "Withdrawals to Express Crypto are no longer supported. Contact the Admin.");
+			} else if($faucetPayWithdrawal == false AND $blockioWithdrawal == false AND $user['address']){
+				$content .= alert("info", "Direct withdrawals and withdrawals to FaucetPay are no longer supported. Contact the Admin.");
+			} else if($withdrawalAvailable == false){
+				if($user['address'])
+						$thresholdAlert = ($thresholdDirect < $thresholdGateway) ? $thresholdDirect : $thresholdGateway;
+					elseif($user['ec_userid'])
+						$thresholdAlert = $thresholdGateway;
 				$content .= alert("info", "Withdrawal threshold of ".$thresholdAlert." Satoshis hasn't been reached yet.");
 			} else {
 				$content .= '<div class="btn-group">
@@ -129,7 +141,7 @@ if($user){
 		}
 
 	} else {
-		$content .= alert("warning", "The site owner hasn't configured the withdrawal methods yet.");
+		$content .= alert("warning", "The site owner hasn't configured any withdrawal methods yet.");
 	}
 	
 	$content .= "<br /><br />";

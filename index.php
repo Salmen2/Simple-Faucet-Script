@@ -11,44 +11,6 @@ if($user){
 
 	$content .= "<a href='account.php' class='btn btn-primary'>Account/Stats/Withdraw</a><br /><br />";
 
-	$expressCryptoApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '10'")->fetch_assoc()['value'];
-	$expressCryptoUserToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '18'")->fetch_assoc()['value'];
-
-	if($expressCryptoApiToken AND $expressCryptoUserToken AND !$user['ec_userid']){
-		if($_POST['ec_usrid']){
-			if(!isset($_POST['token']) || $_POST['token'] !== $_SESSION['token']) {
-			unset($_SESSION['token']);
-			$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
-			exit;
-			}
-			unset($_SESSION['token']);
-			$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
-
-			
-			$pECUsrID = $mysqli->real_escape_string($_POST['ec_usrid']);
-			if(substr($pECUsrID, 0,10) != "EC-UserId-"){
-				$content .= alert("danger", "Wrong User ID. Please try again.<br /><strong>Important:</strong> Please enter firstly your ExpressCrypto User ID. <button type='button' onclick='showform()' class='btn btn-primary btn-xs'>Continue</button>
-				<form class='form-inline' id='ecform' style='display:none;' method='post' action=''><input type='hidden' name='token' value='".$_SESSION['token']."'/> <input type='text' class='form-control' style='width:140px;' name='ec_usrid' placeholder='EC User ID ...'> <button type='submit' class='btn btn-default'>Save</button></form>
-				<script>
-				function showform(){
-					document.getElementById(\"ecform\").style.display = \"block\";
-				}
-				</script>");
-			} else {
-				$mysqli->query("UPDATE faucet_user_list Set ec_userid = '$pECUsrID' WHERE id = '{$user['id']}'");
-				$content .= alert("success", "EC User ID saved. Happy claiming!");
-			}
-		} else {
-			$content .= alert("warning", "<strong>Important:</strong> Please enter firstly your ExpressCrypto User ID. <button type='button' onclick='showform()' class='btn btn-primary btn-xs'>Continue</button>
-			<form class='form-inline' id='ecform' style='display:none;' method='post' action=''><input type='hidden' name='token' value='".$_SESSION['token']."'/> <input type='text' class='form-control' style='width:140px;' name='ec_usrid' placeholder='EC User ID ...'> <button type='submit' class='btn btn-default'>Save</button></form>
-			<script>
-			function showform(){
-				document.getElementById(\"ecform\").style.display = \"block\";
-			}
-			</script>");
-		}
-	}
-
 	$claimStatus = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '11' LIMIT 1")->fetch_assoc()['value'];
 
 	if($claimStatus == "yes"){
@@ -70,7 +32,7 @@ if($user){
 
 	if($user['claim_cryptokey'] == ""){
 		$cryptoGenNumber = rand(1,256);
-		$cryptoKey = hash('sha256', ("Key_".$user['address'].time().$cryptoGenNumber));
+		$cryptoKey = hash('sha256', ("Key_".$user['id'].time().$cryptoGenNumber));
 		$mysqli->query("UPDATE faucet_user_list Set claim_cryptokey = '$cryptoKey' WHERE id = '{$user['id']}'");
 		header("Location: index.php");
 		exit;
@@ -88,13 +50,13 @@ if($user){
 		if($_POST['verifykey'] == $user['claim_cryptokey']){
 			$mysqli->query("UPDATE faucet_user_list Set claim_cryptokey = '' WHERE id = '{$user['id']}'");
 
-			$reCaptcha_privKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '8' LIMIT 1")->fetch_assoc()['value'];
-			$recaptcha = new \ReCaptcha\ReCaptcha($reCaptcha_privKey);
 
-			$respCaptcha = $recaptcha->verify($_POST['g-recaptcha-response']);
+			if(!is_numeric($_POST['selectedCaptcha']))
+				exit;
 
+			$captchaCheckVerify = CaptchaCheck($_POST['selectedCaptcha'], $_POST, $mysqli);
 
-			if(!$respCaptcha->isSuccess()){
+			if(!$captchaCheckVerify){
 				$content .= alert("danger", "Captcha is wrong. <a href='index.php'>Try again</a>.");
 			} else {
 				$VPNShield = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '14' LIMIT 1")->fetch_assoc()['value'];
@@ -108,7 +70,7 @@ if($user){
 						$content .= alert("danger", "Someone else claimed in your network already.");
 					} else {
 						$IpCheckBan = $mysqli->query("SELECT COUNT(id) FROM faucet_banned_ip WHERE ip_address = '$ip'")->fetch_row()[0];
-						$AddressCheckBan = $mysqli->query("SELECT COUNT(id) FROM faucet_banned_address WHERE address = '{$user['address']}'")->fetch_row()[0];
+						$AddressCheckBan = $mysqli->query("SELECT COUNT(id) FROM faucet_banned_address WHERE address = '{$user['address']}' OR address = '{$user['ec_userid']}'")->fetch_row()[0];
 						if($IpCheckBan >= 1 OR $AddressCheckBan >= 1){
 							$content .= alert("danger", "Your Address and/or IP is banned from this service.");
 						} else {
@@ -159,7 +121,8 @@ if($user){
 	if($referralPercent != "0"){
 	$content .= '<blockquote class="text-left">
 					<p>
-						Reflink: <code>'.$Website_Url.'?ref='.$user['id'].'</code>
+						Reflink: <code>'.$Website_Url.'?ref='.$user['id'].'</code><br />
+						Reflink with Address: <code>'.$Website_Url.'?r='.( ($user['address']) ? $user['address'] : $user['ec_userid']).'</code>
 					</p>
 					<footer>Share this link with your friends and earn '.$referralPercent.'% referral commission</footer>
 				</blockquote>';
@@ -168,6 +131,32 @@ if($user){
 	$faucetName = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '1'")->fetch_assoc()['value'];
 	$content .= "<h2>".$faucetName."</h2>";
 	$content .= "<h3>Enter your Address and start to claim!</h3><br />";
+
+	$expressCryptoApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '10'")->fetch_assoc()['value'];
+	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
+	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
+
+	if(!$faucetpayApiToken AND !$blockioApiKey AND $expressCryptoApiToken){
+		$providerWithdr['btc'] = false;
+		$providerWithdr['ec'] = true;
+
+		$textForm = "EC UserID";
+	} else if(($faucetpayApiToken OR $blockioApiKey) AND !$expressCryptoApiToken){
+		$providerWithdr['btc'] = true;
+		$providerWithdr['ec'] = false;
+
+		$textForm = "Bitcoin Address";
+	} else if(($faucetpayApiToken OR $blockioApiKey) AND $expressCryptoApiToken){
+		$providerWithdr['btc'] = true;
+		$providerWithdr['ec'] = true;
+
+		$textForm = "Bitcoin Address or EC UserID";
+	} else {
+		$providerWithdr['btc'] = true;
+		$providerWithdr['ec'] = false;
+
+		$textForm = "Bitcoin Address";
+	}
 
 	if(isset($_POST['address'])){
 		if(!isset($_POST['token']) || $_POST['token'] !== $_SESSION['token']) {
@@ -179,9 +168,10 @@ if($user){
 		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
 
 		if($_POST['address']){
-			$Address = $mysqli->real_escape_string(preg_replace("/[^ \w]+/", "",trim($_POST['address'])));
-			if(strlen($_POST['address']) < 30 || strlen($_POST['address']) > 40){
-				$content .= alert("danger", "The Bitcoin Address doesn't look valid.");
+			$Address = $mysqli->real_escape_string(trim($_POST['address']));
+			$addressCheck = addressCheck($providerWithdr, $Address);
+			if(!$addressCheck['valid']){
+				$content .= alert("danger", "The ".$textForm." doesn't look valid.");
 				$alertForm = "has-error";
 			} else {
 				// Check Referral
@@ -201,25 +191,31 @@ if($user){
 					$referID = 0;
 				}
 
-				$AddressCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE LOWER(address) = '".strtolower($Address)."' LIMIT 1")->fetch_row()[0];
+				$AddressCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE LOWER(address) = '".strtolower($Address)."' OR LOWER(ec_userid) = '".strtolower($Address)."' LIMIT 1")->fetch_row()[0];
 				$timestamp = $mysqli->real_escape_string(time());
 				$ip = $mysqli->real_escape_string($realIpAddressUser);
 
 				if($AddressCheck == 1){
-					$_SESSION['address'] = $Address;
-					$mysqli->query("UPDATE faucet_user_list Set last_activity = '$timestamp', ip_address = '$ip' WHERE address = '$Address'");
+					$userID = $mysqli->query("SELECT id FROM faucet_user_list WHERE LOWER(address) = '".strtolower($Address)."' OR LOWER(ec_userid) = '".strtolower($Address)."' LIMIT 1")->fetch_assoc()['id'];
+					$_SESSION['address'] = $userID;
+					$mysqli->query("UPDATE faucet_user_list Set last_activity = '$timestamp', ip_address = '$ip' WHERE id = '$userID'");
 					header("Location: index.php");
 					exit;
 				} else {
+					if($addressCheck['provider'] == 1)
+							$AddressBTC = $Address;
+						elseif($addressCheck['provider'] == 2)
+							$AddressEC = $Address;
+
 					$ip = $mysqli->real_escape_string($realIpAddressUser);
-					$mysqli->query("INSERT INTO faucet_user_list (address, ec_userid, ip_address, balance, joined, last_activity, referred_by, last_claim, claim_cryptokey) VALUES ('$Address', '', '$ip', '0', '$timestamp', '$timestamp', '$referID', '0', '')");
-					$_SESSION['address'] = $Address;
+					$mysqli->query("INSERT INTO faucet_user_list (account_type, address, ec_userid, ip_address, balance, joined, last_activity, referred_by, last_claim, claim_cryptokey) VALUES ('{$addressCheck['provider']}', '$AddressBTC', '$AddressEC', '$ip', '0', '$timestamp', '$timestamp', '$referID', '0', '')");
+					$_SESSION['address'] = $mysqli->insert_id;
 					header("Location: index.php");
 					exit;
 				}
 			}
 		} else {
-			$content .= alert("danger", "The Bitcoin Address field can't be blank.");
+			$content .= alert("danger", "The ".$textForm." field can't be blank.");
 			$alertForm = "has-error";
 		}
 	}
@@ -227,8 +223,8 @@ if($user){
 	$content .= "<form method='post' action=''>
 
 	<div class='form-group $alertForm'
-		<label for='Address'>Bitcoin Address</label>
-		<center><input class='form-control' type='text' placeholder='Enter your Bitcoin Address' name='address' value='$Address' style='width: 325px;' autofocus></center>
+		<label for='Address'>".$textForm."</label>
+		<center><input class='form-control' type='text' placeholder='Enter your ".$textForm."' name='address' value='$Address' style='width: 325px;' autofocus></center>
 	</div><br />
 	<input type='hidden' name='token' value='".$_SESSION['token']."'/>
 	<button type='submit' class='btn btn-primary'>Join</button>

@@ -1,4 +1,6 @@
 <?php
+require_once("solvemedia.library.php");
+
 function alert($type, $content){
 	$alert = "<div class='alert alert-".$type."' role='alert'>".$content."</div>";
 	return $alert;
@@ -212,5 +214,54 @@ function faucetInfo($mysqli){
   header('Content-Type: application/json');
   echo json_encode($jsonArray, JSON_PRETTY_PRINT);
   exit;
+}
+function CaptchaCheck($selectedCaptcha, $captchaData, $mysqli){
+  if($selectedCaptcha == 1){
+    $reCaptcha_privKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '8' LIMIT 1")->fetch_assoc()['value'];
+    if(!$reCaptcha_privKey){
+      return false;
+    } else {
+      $recaptcha = new \ReCaptcha\ReCaptcha($reCaptcha_privKey);
+
+      $respCaptcha = $recaptcha->verify($captchaData['g-recaptcha-response']);
+      return $respCaptcha->isSuccess();
+    }
+  } else if($selectedCaptcha == 2){
+    $sovleMediaVerificationKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '3' LIMIT 1")->fetch_assoc()['value'];
+    $sovleMediaAuthKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '4' LIMIT 1")->fetch_assoc()['value'];
+    if(!$sovleMediaVerificationKey AND !$sovleMediaAuthKey){
+      return false;
+    } else {
+      $solvemedia_response = solvemedia_check_answer($sovleMediaVerificationKey,
+                $_SERVER["REMOTE_ADDR"],
+                $captchaData["adcopy_challenge"],
+                $captchaData["adcopy_response"],
+                $sovleMediaAuthKey);
+      if(!$solvemedia_response->is_valid) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+}
+
+function addressCheck($provider, $address){
+  if(substr($address, 0, 3) == "EC-"){
+    $returnData['provider'] = 2;
+    if($provider['ec'] == true)
+       $returnData['valid'] = true;
+      else 
+       $returnData['valid'] = false;
+  } else if(strlen($address) >= 30 && strlen($address) <= 40){
+    $returnData['provider'] = 1;
+    if($provider['btc'] == true)
+       $returnData['valid'] = true;
+      else 
+       $returnData['valid'] = false;
+  } else {
+    $returnData['valid'] = false;
+  }
+  return $returnData;
 }
 ?>

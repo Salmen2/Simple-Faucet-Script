@@ -16,13 +16,13 @@ if($selectedTheme == "")
 $Faucetname = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '1'")->fetch_assoc()['value'];
 $tpl->assign("faucetname", $Faucetname);
 
-$Spacetop = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '2'")->fetch_assoc()['value'];
+$Spacetop = $mysqli->query("SELECT * FROM faucet_spaces WHERE id = '1'")->fetch_assoc()['space'];
 $tpl->assign("spacetop", $Spacetop);
 
-$Spaceleft = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '3'")->fetch_assoc()['value'];
+$Spaceleft = $mysqli->query("SELECT * FROM faucet_spaces WHERE id = '2'")->fetch_assoc()['space'];
 $tpl->assign("spaceleft", $Spaceleft);
 
-$Spaceright = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '4'")->fetch_assoc()['value'];
+$Spaceright = $mysqli->query("SELECT * FROM faucet_spaces WHERE id = '3'")->fetch_assoc()['space'];
 $tpl->assign("spaceright", $Spaceright);
 
 // Navbar

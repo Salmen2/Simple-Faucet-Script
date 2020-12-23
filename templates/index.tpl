@@ -47,7 +47,7 @@
     <div class="container">
       <div id="containertop">
         <div class="row">
-          <div class="col-md-6 col-md-offset-3">{$spacetop}</div>
+          <div class="col-md-12 text-center">{$spacetop}</div>
         </div>
       </div>
     </div>

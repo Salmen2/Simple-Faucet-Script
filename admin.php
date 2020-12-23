@@ -312,7 +312,7 @@ if($_SESSION['admin']){
 				$reCaptcha_pubkey5 = $mysqli->real_escape_string($_POST['recaptcha_pubkey']);
 				$mysqli->query("UPDATE faucet_settings Set value = '$reCaptcha_privkey5' WHERE id = '8'");
 				$mysqli->query("UPDATE faucet_settings Set value = '$reCaptcha_pubkey5' WHERE id = '9'");
-				$content .= alert("success", "reCaptcha Keys was changed successfully.");
+				$content .= alert("success", "reCaptcha Keys have been changed successfully.");
 				$reCaptcha_privkey = $mysqli->real_escape_string($_POST['recaptcha_privkey']);
 				$reCaptcha_pubkey = $mysqli->real_escape_string($_POST['recaptcha_pubkey']);
 			}
@@ -329,6 +329,46 @@ if($_SESSION['admin']){
 		</div>
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
+
+
+		$content .= "<h4>SolveMedia Keys</h4>";
+
+		$solvemedia_ckey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '2' LIMIT 1")->fetch_assoc()['value'];
+		$solvemedia_vkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '3' LIMIT 1")->fetch_assoc()['value'];
+		$solvemedia_hkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '4' LIMIT 1")->fetch_assoc()['value'];
+		
+		if($_GET['c'] == 7){
+			if(!$_POST['solvemedia_ckey'] OR !$_POST['solvemedia_vkey'] OR !$_POST['solvemedia_hkey']){
+				$content .= alert("danger", "SolveMedia Keys can't be blank.");
+			} else {
+				$solvemedia_ckey = $mysqli->real_escape_string($_POST['solvemedia_ckey']);
+				$solvemedia_vkey = $mysqli->real_escape_string($_POST['solvemedia_vkey']);
+				$solvemedia_hkey = $mysqli->real_escape_string($_POST['solvemedia_hkey']);
+
+				$mysqli->query("UPDATE faucet_settings Set value = '$solvemedia_ckey' WHERE id = '2'");
+				$mysqli->query("UPDATE faucet_settings Set value = '$solvemedia_vkey' WHERE id = '3'");
+				$mysqli->query("UPDATE faucet_settings Set value = '$solvemedia_hkey' WHERE id = '4'");
+				$content .= alert("success", "SolveMedia Keys have been changed successfully.");
+			}
+		}
+
+		$content .= "<form method='post' action='?p=as&c=7'>
+		<div class='form-group'>
+			<label>SolveMedia Challenge Key (C-Key)</label>
+			<center><input class='form-control' type='text' value='".$solvemedia_ckey."' name='solvemedia_ckey' style='width: 375px;' placeholder='SolveMedia C-Key'></center>
+		</div>
+		<div class='form-group'>
+			<label>SolveMedia Verification Key (V-Key)</label>
+			<center><input class='form-control' type='text' value='".$solvemedia_vkey."' name='solvemedia_vkey' style='width: 375px;' placeholder='SolveMedia V-Key'></center>
+		</div>
+		<div class='form-group'>
+			<label>SolveMedia Authentication Hash Key (H-Key)</label>
+			<center><input class='form-control' type='text' value='".$solvemedia_hkey."' name='solvemedia_hkey' style='width: 375px;' placeholder='SolveMedia H-Key'></center>
+		</div>
+		<button type='submit' class='btn btn-primary'>Change</button>
+		</form><br />";
+
+
 
 		$content .= "<h3>Claim settings</h3><h4>Claim</h4>";
 
@@ -710,15 +750,15 @@ if($_SESSION['admin']){
 
 	$content .= "<h3>Space top</h4>";
 
-	$Spacetop = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '2' LIMIT 1")->fetch_assoc()['value'];
+	$Spacetop = $mysqli->query("SELECT space FROM faucet_spaces WHERE id = '1' LIMIT 1")->fetch_assoc()['space'];
 		
 	if($_GET['c'] == 1){
 		if(!isset($_POST['spacetop'])){
 			$content .= alert("danger", "Error.");
 		} else {
 			$Spacetop = $mysqli->real_escape_string($_POST['spacetop']);
-			$mysqli->query("UPDATE faucet_settings Set value = '$Spacetop' WHERE id = '2'");
-			$content .= alert("success", "HTML Code 'Space top' changed successfully.");
+			$mysqli->query("UPDATE faucet_spaces Set space = '$Spacetop' WHERE id = '1'");
+			$content .= alert("success", "HTML Code 'Space top' changed successfully. Change will take in effect on reload.");
 			$Spacetop = $_POST['spacetop'];
 		}
 	}
@@ -730,15 +770,15 @@ if($_SESSION['admin']){
 
 	$content .= "<h3>Space left</h4>";
 
-	$Spaceleft = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '3' LIMIT 1")->fetch_assoc()['value'];
+	$Spaceleft = $mysqli->query("SELECT space FROM faucet_spaces WHERE id = '2' LIMIT 1")->fetch_assoc()['space'];
 		
 	if($_GET['c'] == 2){
 		if(!isset($_POST['spaceleft'])){
 			$content .= alert("danger", "Error.");
 		} else {
 			$Spaceleft = $mysqli->real_escape_string($_POST['spaceleft']);
-			$mysqli->query("UPDATE faucet_settings Set value = '$Spaceleft' WHERE id = '3'");
-			$content .= alert("success", "HTML Code 'Space left' changed successfully.");
+			$mysqli->query("UPDATE faucet_spaces Set space = '$Spaceleft' WHERE id = '2'");
+			$content .= alert("success", "HTML Code 'Space left' changed successfully. Change will take in effect on reload.");
 			$Spaceleft = $_POST['spaceleft'];
 		}
 	}
@@ -750,15 +790,15 @@ if($_SESSION['admin']){
 
 	$content .= "<h3>Space right</h4>";
 
-	$Spaceright = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '4' LIMIT 1")->fetch_assoc()['value'];
+	$Spaceright = $mysqli->query("SELECT space FROM faucet_spaces WHERE id = '3' LIMIT 1")->fetch_assoc()['space'];
 		
 	if($_GET['c'] == 3){
 		if(!isset($_POST['spaceright'])){
 			$content .= alert("danger", "Error.");
 		} else {
 			$Spaceright = $mysqli->real_escape_string($_POST['spaceright']);
-			$mysqli->query("UPDATE faucet_settings Set value = '$Spaceright' WHERE id = '4'");
-			$content .= alert("success", "HTML Code 'Space right' changed successfully.");
+			$mysqli->query("UPDATE faucet_spaces Set space = '$Spaceright' WHERE id = '3'");
+			$content .= alert("success", "HTML Code 'Space right' changed successfully. Change will take in effect on reload.");
 			$Spaceright = $_POST['spaceright'];
 		}
 	}
@@ -854,11 +894,11 @@ if($_SESSION['admin']){
 	With this feature you can ban Address.</p><br /> 
 
 	<h3>Add Address to ban</h3>
-	<p>Please enter for each line a Bitcoin Address.</p>";
+	<p>Please enter for each line a Bitcoin Address or EC-UserID.</p>";
 
 	if($_GET['c'] == 1){
 		if(!$_POST['addy']){
-			$content .= alert("danger", "Can't find Bitcoin Address.");
+			$content .= alert("danger", "Can't find Bitcoin Address or EC-UserID.");
 		} else {
 			$addy = explode("\r\n", $_POST['addy']);
 			foreach($addy as $addy2) {
@@ -885,7 +925,7 @@ if($_SESSION['admin']){
 			$content .= alert("success", "Bitcoin Address was removed from banlist.");
 			$scroll = true;
 		} else {
-			$content .= alert("danger", "The Bitcoin Address/ID can't be found in the banlist.");
+			$content .= alert("danger", "The Bitcoin Address/EC-UserID can't be found in the banlist.");
 			$scroll = true;
 		}
 	}
@@ -894,7 +934,7 @@ if($_SESSION['admin']){
 	  <thead>
 	    <tr>
 	      <td>#</td>
-	      <td>Bitcoin Address</td>
+	      <td>Bitcoin Address/EC-ID</td>
 	      <td>Actions</td>
 	    </tr>
 	  </thead>";

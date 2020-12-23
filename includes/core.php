@@ -15,6 +15,12 @@ if(!$_COOKIE['refer']){
 	if($_GET['ref'] != ""){
 		$refer = $mysqli->real_escape_string($_GET['ref']);
 		setcookie("refer", $refer,time()+(3600*24));
+	} else if($_GET['r'] != ""){
+		$addyRefer = $mysqli->real_escape_string($_GET['r']);
+		$checkReferID = $mysqli->query("SELECT id FROM faucet_user_list WHERE address = '$addyRefer' OR ec_userid = '$addyRefer'")->fetch_assoc()['id'];
+		if($checkReferID){
+			setcookie("refer", $checkReferID,time()+(3600*24));
+		}
 	}
 }
 

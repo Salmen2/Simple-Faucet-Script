@@ -12,6 +12,7 @@ if($user){
 	if(!isset($_POST['token']) || $_POST['token'] !== $_SESSION['token']) {
 	unset($_SESSION['token']);
 	$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+	header("Location: index.php");
 	exit;
 	}
 	unset($_SESSION['token']);
@@ -22,9 +23,51 @@ if($user){
 			$content .= alert("danger", "Claim failed. <a href='index.php'>Go back</a>");
 		} else {
 
+
 			$reCaptchaPubKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '9' LIMIT 1")->fetch_assoc()['value'];
-			$captchaContent = "<center><div class='g-recaptcha' data-sitekey='".$reCaptchaPubKey."'></div><input type='hidden' name='captchaType' value='1'></center>";
-			
+
+			if($reCaptchaPubKey){
+				$linksCaptcha .= "<a href='#' onClick='showCaptcha(1)'>reCaptcha</a> ";
+				$captchaContentBox .= "<div id='recaptcha-box'><center><div class='g-recaptcha' data-sitekey='".$reCaptchaPubKey."'></div></div>";
+			}
+
+			$solveMediaChallengeKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '2' LIMIT 1")->fetch_assoc()['value'];
+
+			if($solveMediaChallengeKey){
+				$linksCaptcha .= "<a href='#' onCLick='showCaptcha(2)'>SolveMedia</a>";
+				$captchaContentBox .= "<div id='solvemedia-box'><center><script type=\"text/javascript\" src=\"http://api.solvemedia.com/papi/challenge.script?k=".$solveMediaChallengeKey."\"> </script> <noscript> <iframe src=\"http://api.solvemedia.com/papi/challenge.noscript?k=".$solveMediaChallengeKey."\" height=\"300\" width=\"500\" frameborder=\"0\"></iframe><br/> <textarea name=\"adcopy_challenge\" rows=\"3\" cols=\"40\"> </textarea> <input type=\"hidden\" name=\"adcopy_response\" value=\"manual_challenge\"/> </noscript></center></div>";
+			}
+
+			$captchaContent .= "<strong>".$linksCaptcha."</strong><br /><br />
+			".$captchaContentBox."
+			<input type='hidden' id='selectedCaptcha__' name='selectedCaptcha' value='1' /><br />
+			<script>
+			if(document.getElementById('recaptcha-box'))
+				document.getElementById('solvemedia-box').style.display = 'none';
+			function showCaptcha(captcha){
+				if(captcha == 1){
+					hideCaptchaBoxes();
+					document.getElementById('recaptcha-box').style.display = 'block';
+					document.getElementById('selectedCaptcha__').value = '1';
+				} else if(captcha == 2){
+					hideCaptchaBoxes();
+					document.getElementById('solvemedia-box').style.display = 'block';
+					document.getElementById('selectedCaptcha__').value = '2';
+				}
+			}
+			function hideCaptchaBoxes(){
+				if(document.getElementById('recaptcha-box')){
+					document.getElementById('recaptcha-box').style.display = 'none';
+				}
+				if(document.getElementById('solvemedia-box')){
+					document.getElementById('solvemedia-box').style.display = 'none';
+				}
+			}
+			</script>";
+
+			if(!$reCaptchaPubKey AND !$solveMediaChallengeKey){
+				$captchaContent = alert("info", "Admin hasn't set up the captcha system.");
+			}
 
 			
 			$content .= "<h1>2. Solve Captcha</h1><br />
