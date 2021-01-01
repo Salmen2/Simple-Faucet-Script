@@ -253,7 +253,7 @@ function addressCheck($provider, $address){
        $returnData['valid'] = true;
       else 
        $returnData['valid'] = false;
-  } else if(strlen($address) >= 30 && strlen($address) <= 40){
+  } else if(strlen($address) >= 30 && strlen($address) <= 45){
     $returnData['provider'] = 1;
     if($provider['btc'] == true)
        $returnData['valid'] = true;
