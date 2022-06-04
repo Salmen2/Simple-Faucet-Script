@@ -132,31 +132,8 @@ if($user){
 	$content .= "<h2>".$faucetName."</h2>";
 	$content .= "<h3>Enter your Address and start to claim!</h3><br />";
 
-	$expressCryptoApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '10'")->fetch_assoc()['value'];
 	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
 	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
-
-	if(!$faucetpayApiToken AND !$blockioApiKey AND $expressCryptoApiToken){
-		$providerWithdr['btc'] = false;
-		$providerWithdr['ec'] = true;
-
-		$textForm = "EC UserID";
-	} else if(($faucetpayApiToken OR $blockioApiKey) AND !$expressCryptoApiToken){
-		$providerWithdr['btc'] = true;
-		$providerWithdr['ec'] = false;
-
-		$textForm = "Bitcoin Address";
-	} else if(($faucetpayApiToken OR $blockioApiKey) AND $expressCryptoApiToken){
-		$providerWithdr['btc'] = true;
-		$providerWithdr['ec'] = true;
-
-		$textForm = "Bitcoin Address or EC UserID";
-	} else {
-		$providerWithdr['btc'] = true;
-		$providerWithdr['ec'] = false;
-
-		$textForm = "Bitcoin Address";
-	}
 
 	if(isset($_POST['address'])){
 		if(!isset($_POST['token']) || $_POST['token'] !== $_SESSION['token']) {
@@ -169,9 +146,9 @@ if($user){
 
 		if($_POST['address']){
 			$Address = $mysqli->real_escape_string(trim($_POST['address']));
-			$addressCheck = addressCheck($providerWithdr, $Address);
-			if(!$addressCheck['valid']){
-				$content .= alert("danger", "The ".$textForm." doesn't look valid.");
+			$addressCheck = (strlen($Address) >= 30 && strlen($Address) <= 50);
+			if(!$addressCheck){
+				$content .= alert("danger", "The Bitcoin address doesn't look valid.");
 				$alertForm = "has-error";
 			} else {
 				// Check Referral
@@ -191,31 +168,25 @@ if($user){
 					$referID = 0;
 				}
 
-				$AddressCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE LOWER(address) = '".strtolower($Address)."' OR LOWER(ec_userid) = '".strtolower($Address)."' LIMIT 1")->fetch_row()[0];
+				$AddressCheck = $mysqli->query("SELECT COUNT(id) FROM faucet_user_list WHERE LOWER(address) = '".strtolower($Address)."' LIMIT 1")->fetch_row()[0];
 				$timestamp = $mysqli->real_escape_string(time());
 				$ip = $mysqli->real_escape_string($realIpAddressUser);
 
 				if($AddressCheck == 1){
-					$userID = $mysqli->query("SELECT id FROM faucet_user_list WHERE LOWER(address) = '".strtolower($Address)."' OR LOWER(ec_userid) = '".strtolower($Address)."' LIMIT 1")->fetch_assoc()['id'];
+					$userID = $mysqli->query("SELECT id FROM faucet_user_list WHERE LOWER(address) = '".strtolower($Address)."' LIMIT 1")->fetch_assoc()['id'];
 					$_SESSION['address'] = $userID;
 					$mysqli->query("UPDATE faucet_user_list Set last_activity = '$timestamp', ip_address = '$ip' WHERE id = '$userID'");
-					header("Location: index.php");
-					exit;
-				} else {
-					if($addressCheck['provider'] == 1)
-							$AddressBTC = $Address;
-						elseif($addressCheck['provider'] == 2)
-							$AddressEC = $Address;
 
-					$ip = $mysqli->real_escape_string($realIpAddressUser);
-					$mysqli->query("INSERT INTO faucet_user_list (account_type, address, ec_userid, ip_address, balance, joined, last_activity, referred_by, last_claim, claim_cryptokey) VALUES ('{$addressCheck['provider']}', '$AddressBTC', '$AddressEC', '$ip', '0', '$timestamp', '$timestamp', '$referID', '0', '')");
+				} else {
+
+					$mysqli->query("INSERT INTO faucet_user_list (address, ip_address, balance, joined, last_activity, referred_by, last_claim, claim_cryptokey) VALUES ('$Address', '$ip', '0', '$timestamp', '$timestamp', '$referID', '0', '')");
 					$_SESSION['address'] = $mysqli->insert_id;
-					header("Location: index.php");
-					exit;
 				}
+				header("Location: index.php");
+				exit;
 			}
 		} else {
-			$content .= alert("danger", "The ".$textForm." field can't be blank.");
+			$content .= alert("danger", "The Bitcoin address field can't be blank.");
 			$alertForm = "has-error";
 		}
 	}
@@ -223,8 +194,8 @@ if($user){
 	$content .= "<form method='post' action=''>
 
 	<div class='form-group $alertForm'
-		<label for='Address'>".$textForm."</label>
-		<center><input class='form-control' type='text' placeholder='Enter your ".$textForm."' name='address' value='$Address' style='width: 325px;' autofocus></center>
+		<label for='Address'>Bitcoin Address</label>
+		<center><input class='form-control' type='text' placeholder='Enter your Bitcoin Address' name='address' value='$Address' style='width: 325px;' autofocus></center>
 	</div><br />
 	<input type='hidden' name='token' value='".$_SESSION['token']."'/>
 	<button type='submit' class='btn btn-primary'>Join</button>

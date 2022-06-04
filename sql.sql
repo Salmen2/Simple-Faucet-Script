@@ -38,7 +38,6 @@ INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
 (7, 'max_reward', '100'),
 (8, 'reCaptcha_privKey', ''),
 (9, 'reCaptcha_pubKey', ''),
-(10, 'expresscrypto_api_key', ''),
 (11, 'claim_enabled', 'yes'),
 (12, 'admin_username', 'admin'),
 (13, 'admin_password', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'),
@@ -46,7 +45,6 @@ INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES
 (15, 'referral_percent', '0'),
 (16, 'reverse_proxy', 'no'),
 (17, 'admin_login', ''),
-(18, 'expresscrypto_user_token', ''),
 (19, 'faucetpay_api_token', ''),
 (20, 'blockio_api_key', ''),
 (21, 'blockio_pin', ''),
@@ -76,9 +74,7 @@ CREATE TABLE IF NOT EXISTS `faucet_transactions` (
 
 CREATE TABLE IF NOT EXISTS `faucet_user_list` (
 `id` int(32) unsigned NOT NULL,
-  `account_type` int(32) NOT NULL,
   `address` varchar(75) NOT NULL,
-  `ec_userid` varchar(20) NOT NULL,
   `ip_address` varchar(50) NOT NULL,
   `balance` decimal(10,8) NOT NULL,
   `joined` int(32) NOT NULL,

@@ -569,32 +569,18 @@ if($_SESSION['admin']){
 	});
 	</script>";
 
-	$expressCryptoApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '10'")->fetch_assoc()['value'];
-	$expressCryptoUserToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '18'")->fetch_assoc()['value'];
 	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
 	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
 	$blockioPin = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '21'")->fetch_assoc()['value'];
 
 	if($_POST['withdrawal_method']){
 		if($_POST['withdrawal_method'] == 1){
-			if($_POST['api_key'] != $expressCryptoApiToken){
-				$expressCryptoApiToken = $mysqli->real_escape_string($_POST['api_key']);
-				$mysqli->query("UPDATE faucet_settings Set value = '$expressCryptoApiToken' WHERE id = '10'");
-				$alertForm .= alert("success", "ExpressCrypto API Key has been changed.");
-			}
-
-			if($_POST['user_token'] != $expressCryptoUserToken){
-				$expressCryptoUserToken = $mysqli->real_escape_string($_POST['user_token']);
-				$mysqli->query("UPDATE faucet_settings Set value = '$expressCryptoUserToken' WHERE id = '18'");
-				$alertForm .= alert("success", "ExpressCrypto User Token has been changed.");
-			}
-		} else if($_POST['withdrawal_method'] == 2){
 			if($_POST['api_key'] != $faucetpayApiToken){
 				$faucetpayApiToken = $mysqli->real_escape_string($_POST['api_key']);
 				$mysqli->query("UPDATE faucet_settings Set value = '$faucetpayApiToken' WHERE id = '19'");
 				$alertForm .= alert("success", "FaucetPay API Key has been changed.");
 			}
-		} else if($_POST['withdrawal_method'] == 3){
+		} else if($_POST['withdrawal_method'] == 2){
 			if($_POST['api_key'] != $blockioApiKey){
 				$blockioApiKey = $mysqli->real_escape_string($_POST['api_key']);
 				$mysqli->query("UPDATE faucet_settings Set value = '$blockioApiKey' WHERE id = '20'");
@@ -638,37 +624,12 @@ if($_SESSION['admin']){
 
 	  <!-- Nav tabs -->
 	  <ul class=\"nav nav-tabs\" role=\"tablist\">
-	    <li role=\"presentation\" class=\"active\"><a href=\"#expresscryptotab\" aria-controls=\"expresscryptotab\" role=\"tab\" data-toggle=\"tab\">ExpressCrypto</a></li>
 	    <li role=\"presentation\"><a href=\"#faucetpaytab\" aria-controls=\"faucetpaytab\" role=\"tab\" data-toggle=\"tab\">FaucetPay</a></li>
 	    <li role=\"presentation\"><a href=\"#blockiotab\" aria-controls=\"blockiotab\" role=\"tab\" data-toggle=\"tab\">Block.io</a></li>
 	  </ul><br />
 
 	  <!-- Tab panes -->
 	  <div class=\"tab-content\">
-
-		<div role=\"tabpanel\" class=\"tab-pane active\" id=\"expresscryptotab\">
-			<form method='post' class='form-horizontal' action='?p=wds'>
-
-				<div class='form-group'>
-					<label class='col-md-3 control-label'>API Key</label>
-					<div class='col-md-8'>
-						<input type='text' class='form-control' name='api_key' value='".$expressCryptoApiToken."' placeholder='API Key ...' />
-					</div>
-				</div><br />
-
-				<div class='form-group'>
-					<label class='col-md-3 control-label'>User Token</label>
-					<div class='col-md-8'>
-						<input type='text' class='form-control' name='user_token' value='".$expressCryptoUserToken."' placeholder='User Token ...' />
-					</div>
-				</div><br />
-
-				<p>You can generate an API Key at <a href='https://expresscrypto.io/' target='_blank'>Expresscrypto.io</a>.</p><br />
-
-				<input type='hidden' name='withdrawal_method' value='1' />
-				<button type='submit' class='btn btn-success'>Save</button>
-			</form>
-		</div>
 
 		<div role=\"tabpanel\" class=\"tab-pane\" id=\"faucetpaytab\">
 			<form method='post' class='form-horizontal' action='?p=wds'>
@@ -682,7 +643,7 @@ if($_SESSION['admin']){
 
 				<p>You can generate an API Key at <a href='https://faucetpay.io/' target='_blank'>Faucetpay.io</a>.</p><br />
 
-				<input type='hidden' name='withdrawal_method' value='2' />
+				<input type='hidden' name='withdrawal_method' value='1' />
 				<button type='submit' class='btn btn-success'>Save</button>
 			</form>
 		</div>
@@ -706,7 +667,7 @@ if($_SESSION['admin']){
 
 				<p>You can generate an API Key at <a href='https://block.io/' target='_blank'>Block.io</a>.</p><br />
 
-				<input type='hidden' name='withdrawal_method' value='3' />
+				<input type='hidden' name='withdrawal_method' value='2' />
 				<button type='submit' class='btn btn-success'>Save</button>
 			</form>
 		</div><br /><br />
