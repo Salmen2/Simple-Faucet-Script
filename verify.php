@@ -74,7 +74,12 @@ if($user){
 			<form method='post' action='index.php?c=1'>
 			<div class='form-group'>
 				".$captchaContent."
-			</div>
+			</div><br />
+			<div class='form-group'>
+				<label>How many <strong>black</strong> dots do you see?</label><br />
+				<img src='captcha.php'><br />
+				<center><input type='number' class='form-control' style='width:80px;' name='secc2'></center>
+			</div><br />
 			<input type='hidden' name='verifykey' value='".$user['claim_cryptokey']."'/>
 			<input type='hidden' name='token' value='".$_SESSION['token']."'/>
 			<button type='submit' class='btn btn-success'>Claim</button>

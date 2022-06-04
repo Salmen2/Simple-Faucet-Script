@@ -58,6 +58,8 @@ if($user){
 
 			if(!$captchaCheckVerify){
 				$content .= alert("danger", "Captcha is wrong. <a href='index.php'>Try again</a>.");
+			} else if($_SESSION['checker'] != $_POST['secc2']){
+				$content .= alert("danger", "Wrong Secondary Captcha. <a href='index.php'>Try again</a>.");
 			} else {
 				$VPNShield = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '14' LIMIT 1")->fetch_assoc()['value'];
 				$iphubApiKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '22' LIMIT 1")->fetch_assoc()['value'];
