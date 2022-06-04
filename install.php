@@ -31,6 +31,12 @@ if(extension_loaded('gmp') === false){
     $gmpCheck = "<div class='text-success'>GMP is installed.</div>";
 }
 
+if(extension_loaded('gd') === false){
+    $gdCheck = "<div class='text-danger'>GD is not installed. Please install PHP-GD.</div>";
+} else {
+    $gdCheck = "<div class='text-success'>GD is installed.</div>";
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -80,6 +86,10 @@ if(extension_loaded('gmp') === false){
           <tr>
             <td>> GMP</td>
             <td><?php echo $gmpCheck; ?></td>
+          </tr>
+          <tr>
+            <td>> GD</td>
+            <td><?php echo $gdCheck; ?></td>
           </tr>
         </tbody>
       </table></center><br /><br />
