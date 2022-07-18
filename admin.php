@@ -368,7 +368,35 @@ if($_SESSION['admin']){
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
+		$content .= "<h4>hCaptcha Keys</h4>";
 
+		$hCaptchaSecret = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '26' LIMIT 1")->fetch_assoc()['value'];
+		$hCaptchaPublic = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '27' LIMIT 1")->fetch_assoc()['value'];
+		
+		if($_GET['c'] == 8){
+			if(!$_POST['hcaptcha_pub_key'] OR !$_POST['hcaptcha_sec_key']){
+				$content .= alert("danger", "SolveMedia Keys can't be blank.");
+			} else {
+				$hCaptchaSecret = $mysqli->real_escape_string($_POST['hcaptcha_pub_key']);
+				$hCaptchaPublic = $mysqli->real_escape_string($_POST['hcaptcha_sec_key']);
+
+				$mysqli->query("UPDATE faucet_settings Set value = '$hcaptcha_pub_key' WHERE id = '26'");
+				$mysqli->query("UPDATE faucet_settings Set value = '$hcaptcha_sec_key' WHERE id = '27'");
+				$content .= alert("success", "hCaptcha Keys have been changed successfully.");
+			}
+		}
+
+		$content .= "<form method='post' action='?p=as&c=8'>
+		<div class='form-group'>
+			<label>hCaptcha Public Key</label>
+			<center><input class='form-control' type='text' value='".$hCaptchaSecret."' name='hcaptcha_pub_key' style='width: 375px;' placeholder='hCaptcha Public Key'></center>
+		</div>
+		<div class='form-group'>
+			<label>hCaptcha Secret Key</label>
+			<center><input class='form-control' type='text' value='".$hCaptchaPublic."' name='hcaptcha_sec_key' style='width: 375px;' placeholder='hCaptcha Secret Key'></center>
+		</div>
+		<button type='submit' class='btn btn-primary'>Change</button>
+		</form><br />";
 
 		$content .= "<h3>Claim settings</h3><h4>Claim</h4>";
 
@@ -421,7 +449,7 @@ if($_SESSION['admin']){
 		}
 
 
-		if($_GET['c'] == 7){
+		if($_GET['c'] == 9){
 			if(isset($_POST['iphub_apikey'])){
 				$iphubApiKey = $mysqli->real_escape_string($_POST['iphub_apikey']);
 				$mysqli->query("UPDATE faucet_settings Set value = '$iphubApiKey' WHERE id = '22'");
@@ -429,7 +457,7 @@ if($_SESSION['admin']){
 			}
 		}
 
-		$content .= "<br /><p>The VPN/Proxy shield requires an API Key of IPHub.info.</p><br /><form method='post' action='?p=as&c=7'>
+		$content .= "<br /><p>The VPN/Proxy shield requires an API Key of IPHub.info.</p><br /><form method='post' action='?p=as&c=9'>
 		<div class='form-group'>
 			<label>IPHub API Key</label>
 			<center><input class='form-control' type='text' value='".$iphubApiKey."' name='iphub_apikey' style='width: 375px;' placeholder='IPHub API Key'></center>

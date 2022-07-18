@@ -126,3 +126,5 @@ ALTER TABLE `faucet_transactions`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
 ALTER TABLE `faucet_user_list`
 MODIFY `id` int(32) unsigned NOT NULL AUTO_INCREMENT;
+
+INSERT INTO `faucet_settings` (`id`, `name`, `value`) VALUES (NULL, 'hcaptcha_pub_key', 'x'), (NULL, 'hcaptcha_sec_key', 'x');
