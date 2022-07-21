@@ -370,18 +370,18 @@ if($_SESSION['admin']){
 
 		$content .= "<h4>hCaptcha Keys</h4>";
 
-		$hCaptchaSecret = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '26' LIMIT 1")->fetch_assoc()['value'];
-		$hCaptchaPublic = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '27' LIMIT 1")->fetch_assoc()['value'];
+		$hCaptchaPublic = $mysqli->query("SELECT * FROM faucet_settings WHERE name = 'hcaptcha_pub_key' LIMIT 1")->fetch_assoc()['value'];
+		$hCaptchaSecret = $mysqli->query("SELECT * FROM faucet_settings WHERE name = 'hcaptcha_sec_key' LIMIT 1")->fetch_assoc()['value'];
 		
 		if($_GET['c'] == 8){
 			if(!$_POST['hcaptcha_pub_key'] OR !$_POST['hcaptcha_sec_key']){
-				$content .= alert("danger", "SolveMedia Keys can't be blank.");
+				$content .= alert("danger", "hCaptcha Keys Keys can't be blank.");
 			} else {
-				$hCaptchaSecret = $mysqli->real_escape_string($_POST['hcaptcha_pub_key']);
-				$hCaptchaPublic = $mysqli->real_escape_string($_POST['hcaptcha_sec_key']);
+				$hCaptchaPublic = $mysqli->real_escape_string($_POST['hcaptcha_pub_key']);
+				$hCaptchaSecret = $mysqli->real_escape_string($_POST['hcaptcha_sec_key']);
 
-				$mysqli->query("UPDATE faucet_settings Set value = '$hcaptcha_pub_key' WHERE id = '26'");
-				$mysqli->query("UPDATE faucet_settings Set value = '$hcaptcha_sec_key' WHERE id = '27'");
+				$mysqli->query("UPDATE faucet_settings Set value = '$hCaptchaPublic' WHERE name = 'hcaptcha_pub_key'");
+				$mysqli->query("UPDATE faucet_settings Set value = '$hCaptchaSecret' WHERE name = 'hcaptcha_sec_key'");
 				$content .= alert("success", "hCaptcha Keys have been changed successfully.");
 			}
 		}
@@ -389,11 +389,11 @@ if($_SESSION['admin']){
 		$content .= "<form method='post' action='?p=as&c=8'>
 		<div class='form-group'>
 			<label>hCaptcha Public Key</label>
-			<center><input class='form-control' type='text' value='".$hCaptchaSecret."' name='hcaptcha_pub_key' style='width: 375px;' placeholder='hCaptcha Public Key'></center>
+			<center><input class='form-control' type='text' value='".$hCaptchaPublic."' name='hcaptcha_pub_key' style='width: 375px;' placeholder='hCaptcha Public Key'></center>
 		</div>
 		<div class='form-group'>
 			<label>hCaptcha Secret Key</label>
-			<center><input class='form-control' type='text' value='".$hCaptchaPublic."' name='hcaptcha_sec_key' style='width: 375px;' placeholder='hCaptcha Secret Key'></center>
+			<center><input class='form-control' type='text' value='".$hCaptchaSecret."' name='hcaptcha_sec_key' style='width: 375px;' placeholder='hCaptcha Secret Key'></center>
 		</div>
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";

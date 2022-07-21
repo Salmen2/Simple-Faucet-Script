@@ -151,6 +151,27 @@ function CaptchaCheck($selectedCaptcha, $captchaData, $mysqli){
 			else 
 				return true;
 		}
+	} else if($selectedCaptcha == 3){
+		$hCaptchaPrivKey = $mysqli->query("SELECT * FROM faucet_settings WHERE name = 'hcaptcha_sec_key' LIMIT 1")->fetch_assoc()['value'];
+
+		$data = array(
+			'secret' => $hCaptchaPrivKey,
+			'response' => $captchaData['h-captcha-response']
+		);
+
+		$verify = curl_init();
+		curl_setopt($verify, CURLOPT_URL, "https://hcaptcha.com/siteverify");
+		curl_setopt($verify, CURLOPT_POST, true);
+		curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($data));
+		curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
+		$response = curl_exec($verify);
+
+		$responseData = json_decode($response);
+		if($responseData->success)
+			return true;
+		else
+			return false;
+
 	}
 }
 ?>
