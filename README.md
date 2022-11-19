@@ -1,5 +1,6 @@
 # Simple Faucet Script
-Bitcoin Faucet integrated with banlist and VPN/Proxy Shield. It uses the service of Google reCaptcha (v2; box) and IPHub. Any claims will be saved in the account balance and can be withdrawn to ExpressCrypto, FaucetPay or directly using Block.io
+Crypto Faucet integrated with banlist and VPN/Proxy Shield. It uses the service of Google reCaptcha (v2; box) and IPHub. Any claims will be saved in the account balance and can be withdrawn to FaucetPay or directly using Block.io.
+The faucet supports the currencies Bitcoin, Litecoin and Ethereum.
 
 # Mininum Requirements
 
