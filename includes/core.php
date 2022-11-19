@@ -12,10 +12,10 @@ include("blockio.library.php");
 include("rc/autoload.php");
 
 if(!$_COOKIE['refer']){
-	if($_GET['ref'] != ""){
+	if(!$_GET['ref']){
 		$refer = $mysqli->real_escape_string($_GET['ref']);
 		setcookie("refer", $refer,time()+(3600*24));
-	} else if($_GET['r'] != ""){
+	} else if(!$_GET['r']){
 		$addyRefer = $mysqli->real_escape_string($_GET['r']);
 		$checkReferID = $mysqli->query("SELECT id FROM faucet_user_list WHERE address = '$addyRefer' OR ec_userid = '$addyRefer'")->fetch_assoc()['id'];
 		if($checkReferID){
@@ -52,4 +52,15 @@ if($reverseProxy == "yes"){
 if($_SESSION['token'] == ""){
 	$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
 }
+
+// Faucet currencies
+
+$faucetCurrencies = array("Bitcoin" => array("BTC", "Satoshi"),
+						  "Ethereum" => array("ETH", "Gwei"),
+						  "Litecoin" => array("LTC", "Litoshi"),
+						  "Binance Coin" => array("BNB", "Jager"));
+
+$websiteCurrency = $mysqli->query("SELECT value FROM faucet_settings WHERE name = 'faucet_currency'")->fetch_assoc()['value'];
+
+
 ?>

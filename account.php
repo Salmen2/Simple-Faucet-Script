@@ -9,7 +9,7 @@ if($user){
 	$content .= "<h3>Address</h3>";
 	$content .= ($user['address']) ? $user['address'] : $user['ec_userid'];
 	$content .= "<h3>Balance</h3>";
-	$content .= toSatoshi($user['balance'])." Satoshi<br /><br />";
+	$content .= toSatoshi($user['balance'])." {$faucetCurrencies[$websiteCurrency][1]}<br /><br />";
 
 	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
 	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
@@ -34,10 +34,10 @@ if($user){
 		if($_GET['withdr']){
 			if($_GET['withdr'] == "fp"){
 				if(toSatoshi($user['balance']) < $thresholdGateway){
-					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdGateway." Satoshis.");
+					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdGateway." {$faucetCurrencies[$websiteCurrency][1]}s.");
 				} else {
 					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
-					$faucetpay = new FaucetPay($faucetpayApiToken, "BTC");
+					$faucetpay = new FaucetPay($faucetpayApiToken, $faucetCurrencies[$websiteCurrency][0]);
 					$result = $faucetpay->send($user['address'], toSatoshi($user['balance']));
 					if($result["success"] === true){
 						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', UNIX_TIMESTAMP(NOW()))");
@@ -49,9 +49,9 @@ if($user){
 				}
 			} else if($_GET['withdr'] == "direct"){
 				if(toSatoshi($user['balance']) < $thresholdDirect){
-					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdDirect." Satoshis.");
-				} else if(!$user['address']){
-					$content .= alert("warning", "You cannot withdraw BTC to FaucetPay using a ExpressCrypto Account.");
+					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdDirect." {$faucetCurrencies[$websiteCurrency][1]}s.");
+				} else if(!in_array($websiteCurrency, array("BTC", "LTC"))){
+					$content .= alert("warning", "This currency is not supported for direct withdrawal");
 				} else {
 					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
 
@@ -81,7 +81,7 @@ if($user){
 			
 
 			$thresholdDirect = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '24'")->fetch_assoc()['value'];
-			if($blockioWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdDirect AND $user['address']){
+			if($blockioWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdDirect AND $user['address'] AND in_array($websiteCurrency, array("BTC", "LTC"))){
 				$withdrawalButtonLink .= '<li><a href="account.php?withdr=direct">Direct</a></li>';
 				$withdrawalAvailable = true;
 			}
@@ -91,7 +91,7 @@ if($user){
 			} else if($withdrawalAvailable == false){
 				$thresholdAlert = ($thresholdDirect < $thresholdGateway) ? $thresholdDirect : $thresholdGateway;
 
-				$content .= alert("info", "Withdrawal threshold of ".$thresholdAlert." Satoshis hasn't been reached yet.");
+				$content .= alert("info", "Withdrawal threshold of ".$thresholdAlert." {$faucetCurrencies[$websiteCurrency][1]}s hasn't been reached yet.");
 			} else {
 				$content .= '<div class="btn-group">
 				  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -143,11 +143,11 @@ if($user){
 	</div>
 	<div class='col-md-4'>
 		<h4>Total Claimed</h4>
-		<b>".toSatoshi($TotalClaimed)."</b><br />Satoshi
+		<b>".toSatoshi($TotalClaimed)."</b><br />{$faucetCurrencies[$websiteCurrency][1]}
 	</div>
 	<div class='col-md-4'>
 		<h4>Total Referral Payout</h4>
-		<b>".toSatoshi($TotalReferralPayout)."</b><br />Satoshi
+		<b>".toSatoshi($TotalReferralPayout)."</b><br />{$faucetCurrencies[$websiteCurrency][1]}
 	</div>
 	<div class='col-md-12'>
 		<h3>Last 24 Hours</h3>
@@ -158,11 +158,11 @@ if($user){
 	</div>
 	<div class='col-md-4'>
 		<h4>Claimed</h4>
-		<b>".toSatoshi($Last24HoursClaimed)."</b><br />Satoshi
+		<b>".toSatoshi($Last24HoursClaimed)."</b><br />{$faucetCurrencies[$websiteCurrency][1]}
 	</div>
 	<div class='col-md-4'>
 		<h4>Total Referral Payout</h4>
-		<b>".toSatoshi($Last24HoursReferralPayout)."</b><br />Satoshi
+		<b>".toSatoshi($Last24HoursReferralPayout)."</b><br />{$faucetCurrencies[$websiteCurrency][1]}
 	</div>
 	</div>";
 

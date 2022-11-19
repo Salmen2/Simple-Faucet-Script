@@ -7,7 +7,7 @@ if($user){
 	$content .= "<h3>Address</h3>";
 	$content .= $user['address'];
 	$content .= "<h3>Balance</h3>";
-	$content .= toSatoshi($user['balance'])." Satoshi<br /><br />";
+	$content .= toSatoshi($user['balance'])." {$faucetCurrencies[$websiteCurrency][1]}<br /><br />";
 
 	$content .= "<a href='account.php' class='btn btn-primary'>Account/Stats/Withdraw</a><br /><br />";
 
@@ -21,9 +21,9 @@ if($user){
 	$maxReward = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '7' LIMIT 1")->fetch_assoc()['value'];
 
 	if($minReward != $maxReward){
-		$content .= alert("success", "<span class='glyphicon glyphicon-info-sign' aria-hidden='true'></span> Rewards: ".$minReward." to ".$maxReward." Satoshi every ".$timer." minutes");
+		$content .= alert("success", "<span class='glyphicon glyphicon-info-sign' aria-hidden='true'></span> Rewards: ".$minReward." to ".$maxReward." {$faucetCurrencies[$websiteCurrency][1]} every ".$timer." minutes");
 	} else {
-		$content .= alert("success", "<span class='glyphicon glyphicon-info-sign' aria-hidden='true'></span> Rewards: ".$maxReward." Satoshi every ".$timer." minutes");
+		$content .= alert("success", "<span class='glyphicon glyphicon-info-sign' aria-hidden='true'></span> Rewards: ".$maxReward." {$faucetCurrencies[$websiteCurrency][1]} every ".$timer." minutes");
 	}
 
 	$nextClaim = $user['last_claim'] + ($timer * 60);
@@ -86,7 +86,7 @@ if($user){
 
 							$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Payout', '$payOutBTC', '$timestamp')");
 							$mysqli->query("UPDATE faucet_user_list Set balance = balance + $payOutBTC, last_claim = '$timestamp' WHERE id = '{$user['id']}'");
-							$content .= alert("success", "You've claimed successfully ".$payOut." Satoshi.<br />You can claim again in ".$timer." minutes!");
+							$content .= alert("success", "You've claimed successfully ".$payOut." {$faucetCurrencies[$websiteCurrency][1]}.<br />You can claim again in ".$timer." minutes!");
 
 							$referralPercent = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '15' LIMIT 1")->fetch_assoc()['value'];
 
@@ -188,7 +188,7 @@ if($user){
 				exit;
 			}
 		} else {
-			$content .= alert("danger", "The Bitcoin address field can't be blank.");
+			$content .= alert("danger", "The {$websiteCurrency} address field can't be blank.");
 			$alertForm = "has-error";
 		}
 	}
@@ -196,8 +196,8 @@ if($user){
 	$content .= "<form method='post' action=''>
 
 	<div class='form-group $alertForm'
-		<label for='Address'>Bitcoin Address</label>
-		<center><input class='form-control' type='text' placeholder='Enter your Bitcoin Address' name='address' value='$Address' style='width: 325px;' autofocus></center>
+		<label for='Address'>{$websiteCurrency} Address</label>
+		<center><input class='form-control' type='text' placeholder='Enter your {$websiteCurrency} Address' name='address' value='$Address' style='width: 325px;' autofocus></center>
 	</div><br />
 	<input type='hidden' name='token' value='".$_SESSION['token']."'/>
 	<button type='submit' class='btn btn-primary'>Join</button>

@@ -62,11 +62,11 @@ if($_SESSION['admin']){
 		</div>
 		<div class='col-md-4'>
 			<h4>Total Claimed</h4>
-			<b>".toSatoshi($TotalClaimed)."</b><br />Satoshi
+			<b>".toSatoshi($TotalClaimed)."</b><br />{$faucetCurrencies[$websiteCurrency][1]}
 		</div>
 		<div class='col-md-4'>
 			<h4>Total Referral Payout</h4>
-			<b>".toSatoshi($TotalReferralPayout)."</b><br />Satoshi
+			<b>".toSatoshi($TotalReferralPayout)."</b><br />{$faucetCurrencies[$websiteCurrency][1]}
 		</div>
 		<div class='col-md-12'>
 			<h3>Last 24 Hours</h3>
@@ -77,11 +77,11 @@ if($_SESSION['admin']){
 		</div>
 		<div class='col-md-4'>
 			<h4>Claimed</h4>
-			<b>".toSatoshi($Last24HoursClaimed)."</b><br />Satoshi
+			<b>".toSatoshi($Last24HoursClaimed)."</b><br />{$faucetCurrencies[$websiteCurrency][1]}
 		</div>
 		<div class='col-md-4'>
 			<h4>Referral Payout</h4>
-			<b>".toSatoshi($Last24HoursReferralPayout)."</b><br />Satoshi
+			<b>".toSatoshi($Last24HoursReferralPayout)."</b><br />{$faucetCurrencies[$websiteCurrency][1]}
 		</div>
 		</div><br /><h2>Configuration</h2>
 		<a class='btn btn-default' href='?p=as'>Standard settings</a><br />
@@ -154,10 +154,43 @@ if($_SESSION['admin']){
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
+		$content .= "<h4>Change Currency</h4>";
+
+		if($_GET['c'] == 25){
+			if(!$_POST['faucetCurrency']){
+				$content .= alert("danger", "Please choose a faucet currenc.");
+			} else if(!in_array($_POST['faucetCurrency'], array_keys($faucetCurrencies))){
+				$content .= alert("danger", "Invalid Faucet Currency");
+			} else {
+				$faucetCurrency = $mysqli->real_escape_string($_POST['faucetCurrency']);
+				$mysqli->query("UPDATE faucet_settings Set value = '$faucetCurrency' WHERE name = 'faucet_currency'");
+				$content .= alert("success", "Faucet currency was changed successfully.");
+			}
+		}
+
+		$faucetCurrency = $mysqli->query("SELECT value FROM faucet_settings WHERE name = 'faucet_currency' LIMIT 1")->fetch_assoc()['value'];
+
+		$selectContent = "<select class='form-control' name='faucetCurrency' style='width: 225px;'>";
+
+		foreach(array_keys($faucetCurrencies) as $itFaucetCurrency) {
+			$selectContent .= "<option value='{$itFaucetCurrency}' ".($itFaucetCurrency == $faucetCurrency ? 'selected' : '').">{$itFaucetCurrency}</option>";
+		}
+
+		$selectContent .= "</select>";
+
+		$content .= "<form method='post' action='?p=as&c=25'>
+		<div class='form-group'>
+			<label>Faucet Currency</label>
+			<center>{$selectContent}</center>
+		</div>
+		<button type='submit' class='btn btn-primary'>Change</button>
+		</form><br />";
+
+
 		$content .= "<h4>Change Rewards</h4>";
 		
-		$minReward = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '6' LIMIT 1")->fetch_assoc()['value'];
-		$maxReward = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '7' LIMIT 1")->fetch_assoc()['value'];
+		$minReward = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '6' LIMIT 1")->fetch_assoc()['value'];
+		$maxReward = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '7' LIMIT 1")->fetch_assoc()['value'];
 		
 		if($_GET['c'] == 3){
 			if(!$_POST['minreward'] OR !$_POST['maxreward']){
@@ -179,11 +212,11 @@ if($_SESSION['admin']){
 
 		$content .= "<form method='post' action='?p=as&c=3'>
 		<div class='form-group'>
-			<label>Mininum Reward (Satoshi)</label>
+			<label>Mininum Reward (".$faucetCurrencies[$websiteCurrency][1].")</label>
 			<center><input class='form-control' type='number' name='minreward' style='width: 225px;' value='$minReward' placeholder='Mininum Reward'></center>
 		</div>
 		<div class='form-group'>
-			<label>Maximum Reward (Satoshi)</label>
+			<label>Maximum Reward (".$faucetCurrencies[$websiteCurrency][1].")</label>
 			<center><input class='form-control' type='number' name='maxreward' style='width: 225px;' value='$maxReward' placeholder='Maximum Reward'></center>
 		</div>
 		<button type='submit' class='btn btn-primary'>Change</button>
@@ -722,7 +755,9 @@ if($_SESSION['admin']){
 					</div>
 				</div><br />
 
-				<button type='submit' class='btn btn-success'>Save</button>
+				<button type='submit' class='btn btn-success'>Save</button><br /><br />
+
+				<span class='help-block'>Above values refer to the smallest unit (Satoshi, Litoshi, Gwei, etc...)</span>
 		</form>
 
 
