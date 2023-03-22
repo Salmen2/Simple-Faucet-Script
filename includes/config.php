@@ -3,9 +3,9 @@
 // Database Configuration
 
 $dbHost = "localhost";
-$dbUser = "";
-$dbPW = "";
-$dbName = "";
+$dbUser = "root";
+$dbPW = "wani8segu";
+$dbName = "faucetscript";
 
 // Establish connection
 

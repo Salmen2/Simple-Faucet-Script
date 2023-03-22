@@ -52,8 +52,6 @@ class Template
            return false;
         }
 
-        // Funktionen parsen
-        $this->parseFunctions();
     }
 
     public function assign($replace, $replacement) {
@@ -78,21 +76,7 @@ class Template
     }
 
     private function replaceLangVars($lang) {
-        $this->template = preg_replace("/\{L_(.*)\}/isUe", "\$lang[strtolower('\\1')]", $this->template);
-    }
-
-    private function parseFunctions() {
-        while( preg_match( "/" .$this->leftDelimiterF ."include file=\"(.*)\.(.*)\""
-                           .$this->rightDelimiterF ."/isUe", $this->template) )
-        {
-            $this->template = preg_replace( "/" .$this->leftDelimiterF ."include file=\"(.*)\.(.*)\""
-                                            .$this->rightDelimiterF."/isUe",
-                                            "file_get_contents(\$this->templateDir.'\\1'.'.'.'\\2')",
-                                            $this->template );
-        }
-
-        $this->template = preg_replace_callback( "/" .$this->leftDelimiterC ."(.*)" .$this->rightDelimiterC ."/isUe",
-                                        "", $this->template );
+        $this->template = preg_replace_callback ("/\{L_(.*)\}/isUe", "\$lang[strtolower('\\1')]", $this->template);
     }
 
     public function display() {
