@@ -11,13 +11,13 @@ include("faucetpay.library.php");
 include("blockio.library.php");
 include("rc/autoload.php");
 
-if(!$_COOKIE['refer']){
-	if(!$_GET['ref']){
+if(!empty($_COOKIE['refer'])){
+	if(!empty($_GET['ref'])){
 		$refer = $mysqli->real_escape_string($_GET['ref']);
 		setcookie("refer", $refer,time()+(3600*24));
-	} else if(!$_GET['r']){
+	} else if(!empty($_GET['r'])){
 		$addyRefer = $mysqli->real_escape_string($_GET['r']);
-		$checkReferID = $mysqli->query("SELECT id FROM faucet_user_list WHERE address = '$addyRefer' OR ec_userid = '$addyRefer'")->fetch_assoc()['id'];
+		$checkReferID = $mysqli->query("SELECT id FROM faucet_user_list WHERE address = '$addyRefer'")->fetch_assoc()['id'];
 		if($checkReferID){
 			setcookie("refer", $checkReferID,time()+(3600*24));
 		}

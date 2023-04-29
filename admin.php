@@ -1061,7 +1061,7 @@ if($_SESSION['admin']){
 			$PwDB = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '13' LIMIT 1")->fetch_assoc()['value'];
 			$loginAttempt = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '17' LIMIT 1")->fetch_assoc()['value'];
 
-			$lastLoginSecond = time() - $loginAttempt;
+			$lastLoginSecond = time() - (int)$loginAttempt;
 
 			$mysqli->query("UPDATE faucet_settings Set value = '".time()."' WHERE id = '17'");
 
