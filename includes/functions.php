@@ -174,4 +174,59 @@ function CaptchaCheck($selectedCaptcha, $captchaData, $mysqli){
 
 	}
 }
+
+/**
+ * Validate CSRF token for admin panel requests
+ * This function should be called on all POST requests in the admin panel
+ * @return bool Returns true if token is valid, false otherwise
+ */
+function validateAdminCSRF(){
+	if(!isset($_POST['csrf_token']) || !isset($_SESSION['token'])){
+		return false;
+	}
+
+	if($_POST['csrf_token'] !== $_SESSION['token']){
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Regenerate CSRF token after validation
+ * This prevents token reuse attacks
+ */
+function regenerateCSRFToken(){
+	$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+}
+
+/**
+ * Get the current CSRF token
+ * @return string The current CSRF token
+ */
+function getCSRFToken(){
+	if(!isset($_SESSION['token']) || empty($_SESSION['token'])){
+		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+	}
+	return $_SESSION['token'];
+}
+
+/**
+ * Generate a hidden CSRF token field for forms
+ * @return string HTML input field with CSRF token
+ */
+function csrfTokenField(){
+	$token = getCSRFToken();
+	return "<input type='hidden' name='csrf_token' value='".$token."' />";
+}
+
+/**
+ * Sanitize output to prevent XSS
+ * Use this when displaying user-controlled content in HTML context
+ * @param string $string The string to sanitize
+ * @return string The sanitized string
+ */
+function escapeHTML($string){
+	return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+}
 ?>

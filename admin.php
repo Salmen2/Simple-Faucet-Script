@@ -100,17 +100,20 @@ if($_SESSION['admin']){
 		case("as"):
 		$content .= "<a href='admin.php'>Back</a><br>
 		<h3>Admin Settings</h3><h4>Change Admin login datas</h4>";
-		
+
 		$Username = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '12' LIMIT 1")->fetch_assoc()['value'];
 
 		if($_GET['c'] == 1){
 		if(isset($_POST['username']) AND isset($_POST['password'])){
-			if($_POST['username'] AND $_POST['password']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if($_POST['username'] AND $_POST['password']){
 				$username = $mysqli->real_escape_string($_POST['username']);
 				$password = $mysqli->real_escape_string(hash("sha256", $_POST['password']));
 				$mysqli->query("UPDATE faucet_settings Set value = '$username' WHERE id = '12'");
 				$mysqli->query("UPDATE faucet_settings Set value = '$password' WHERE id = '13'");
 				$content .= alert("success", "Username and Password was changed successfully.");
+				regenerateCSRFToken();
 			} else if($_POST['username']){
 				$content .= alert("danger", "Please fill all forms.");
 			}
@@ -120,7 +123,7 @@ if($_SESSION['admin']){
 		$content .= "<form method='post' action='?p=as&c=1'>
 		<div class='form-group'>
 			<label>Username</label>
-			<center><input class='form-control' type='text' name='username' style='width: 225px;' value='$Username' placeholder='Username ...'></center>
+			<center><input class='form-control' type='text' name='username' style='width: 225px;' value='".escapeHTML($Username)."' placeholder='Username ...'></center>
 		</div>
 
 		<div class='form-group'>
@@ -128,36 +131,42 @@ if($_SESSION['admin']){
 			<center><input class='form-control' type='password' name='password' style='width: 225px;' placeholder='Password ...'></center>
 			<span class='help-block'>Can't be shown because it's encoded.</span>
 		</div>
-
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
 		$content .= "<h3>Faucet settings</h3><h4>Change Faucet name</h4>";
 
 		$Faucetname = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '1' LIMIT 1")->fetch_assoc()['value'];
-		
+
 		if($_GET['c'] == 2){
-			if(!$_POST['faucetname']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_POST['faucetname']){
 				$content .= alert("danger", "Faucetname can't be blank.");
 			} else {
 				$Faucetname = $mysqli->real_escape_string($_POST['faucetname']);
 				$mysqli->query("UPDATE faucet_settings Set value = '$Faucetname' WHERE id = '1'");
 				$content .= alert("success", "Faucetname was changed successfully.");
+				regenerateCSRFToken();
 			}
 		}
 
 		$content .= "<form method='post' action='?p=as&c=2'>
 		<div class='form-group'>
 			<label>Faucetname</label>
-			<center><input class='form-control' type='text' name='faucetname' style='width: 225px;' value='$Faucetname' placeholder='Faucetname ...'></center>
+			<center><input class='form-control' type='text' name='faucetname' style='width: 225px;' value='".escapeHTML($Faucetname)."' placeholder='Faucetname ...'></center>
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
 		$content .= "<h4>Change Currency</h4>";
 
 		if($_GET['c'] == 25){
-			if(!$_POST['faucetCurrency']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_POST['faucetCurrency']){
 				$content .= alert("danger", "Please choose a faucet currenc.");
 			} else if(!in_array($_POST['faucetCurrency'], array_keys($faucetCurrencies))){
 				$content .= alert("danger", "Invalid Faucet Currency");
@@ -165,6 +174,7 @@ if($_SESSION['admin']){
 				$faucetCurrency = $mysqli->real_escape_string($_POST['faucetCurrency']);
 				$mysqli->query("UPDATE faucet_settings Set value = '$faucetCurrency' WHERE name = 'faucet_currency'");
 				$content .= alert("success", "Faucet currency was changed successfully.");
+				regenerateCSRFToken();
 			}
 		}
 
@@ -183,17 +193,20 @@ if($_SESSION['admin']){
 			<label>Faucet Currency</label>
 			<center>{$selectContent}</center>
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
 
 		$content .= "<h4>Change Rewards</h4>";
-		
+
 		$minReward = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '6' LIMIT 1")->fetch_assoc()['value'];
 		$maxReward = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '7' LIMIT 1")->fetch_assoc()['value'];
-		
+
 		if($_GET['c'] == 3){
-			if(!$_POST['minreward'] OR !$_POST['maxreward']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_POST['minreward'] OR !$_POST['maxreward']){
 				$content .= alert("danger", "Mininum and Maximum reward can't be blank.");
 			} else {
 				if(!is_numeric($_POST['minreward']) OR !is_numeric($_POST['maxreward'])){
@@ -206,6 +219,7 @@ if($_SESSION['admin']){
 					$content .= alert("success", "Rewards was changed successfully.");
 					$minReward = $minreward5;
 					$maxReward = $maxreward5;
+					regenerateCSRFToken();
 				}
 			}
 		}
@@ -213,12 +227,13 @@ if($_SESSION['admin']){
 		$content .= "<form method='post' action='?p=as&c=3'>
 		<div class='form-group'>
 			<label>Mininum Reward (".$faucetCurrencies[$websiteCurrency][1].")</label>
-			<center><input class='form-control' type='number' name='minreward' style='width: 225px;' value='$minReward' placeholder='Mininum Reward'></center>
+			<center><input class='form-control' type='number' name='minreward' style='width: 225px;' value='".escapeHTML($minReward)."' placeholder='Mininum Reward'></center>
 		</div>
 		<div class='form-group'>
 			<label>Maximum Reward (".$faucetCurrencies[$websiteCurrency][1].")</label>
-			<center><input class='form-control' type='number' name='maxreward' style='width: 225px;' value='$maxReward' placeholder='Maximum Reward'></center>
+			<center><input class='form-control' type='number' name='maxreward' style='width: 225px;' value='".escapeHTML($maxReward)."' placeholder='Maximum Reward'></center>
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
@@ -227,7 +242,9 @@ if($_SESSION['admin']){
 
 		$timer = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '5' LIMIT 1")->fetch_assoc()['value'];
 		if($_GET['c'] == 4){
-			if(!$_POST['timer']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_POST['timer']){
 				$content .= alert("danger", "Timer can't be blank.");
 			} else {
 				if(!is_numeric($_POST['timer'])){
@@ -237,6 +254,7 @@ if($_SESSION['admin']){
 
 					$mysqli->query("UPDATE faucet_settings Set value = '$timer5' WHERE id = '5'");
 					$content .= alert("success", "Timer was changed successfully.");
+					regenerateCSRFToken();
 				}
 			}
 		}
@@ -244,8 +262,9 @@ if($_SESSION['admin']){
 		$content .= "<form method='post' action='?p=as&c=4'>
 		<div class='form-group'>
 			<label>Timer (minutes)</label>
-			<center><input class='form-control' type='number' name='timer' style='width: 225px;' value='$timer' placeholder='Timer'></center>
+			<center><input class='form-control' type='number' name='timer' style='width: 225px;' value='".escapeHTML($timer)."' placeholder='Timer'></center>
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
@@ -254,7 +273,9 @@ if($_SESSION['admin']){
 		$referralPercent = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '15' LIMIT 1")->fetch_assoc()['value'];
 
 		if($_GET['c'] == "r"){
-			if(!$_POST['referral']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_POST['referral']){
 				$content .= alert("danger", "Commission can't be blank.");
 			} else {
 				if(!is_numeric($_POST['referral'])){
@@ -264,6 +285,7 @@ if($_SESSION['admin']){
 
 					$mysqli->query("UPDATE faucet_settings Set value = '$referralPercent' WHERE id = '15'");
 					$content .= alert("success", "Referral Program Commission was changed successfully.");
+					regenerateCSRFToken();
 				}
 			}
 		}
@@ -271,9 +293,10 @@ if($_SESSION['admin']){
 		$content .= "<form method='post' action='?p=as&c=r'>
 		<div class='form-group'>
 			<label>Commission in %</label>
-			<center><input class='form-control' type='number' name='referral' style='width: 225px;' value='$referralPercent' placeholder='25'></center>
+			<center><input class='form-control' type='number' name='referral' style='width: 225px;' value='".escapeHTML($referralPercent)."' placeholder='25'></center>
 			<span class='help-block'>Enter without percent. Example: 10<br />To disable Referral Program enter 0
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
@@ -282,11 +305,14 @@ if($_SESSION['admin']){
 		$selectedTheme = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '25' LIMIT 1")->fetch_assoc()['value'];
 
 		if($_GET['c'] == "st"){
-			if($_POST['selected_style']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if($_POST['selected_style']){
 				if($_POST['selected_style'] == "Default"){
 					$mysqli->query("UPDATE faucet_settings Set value = '' WHERE id = '25'");
 					$content .= alert("success", "Theme changed to Default.");
 					$selectedTheme = "";
+					regenerateCSRFToken();
 				} else {
 					$pSelectedStyle = $_POST['selected_style'];
 					if(in_array($pSelectedStyle, $bootsWatchStyles) == false){
@@ -295,6 +321,7 @@ if($_SESSION['admin']){
 						$mysqli->query("UPDATE faucet_settings Set value = '$pSelectedStyle' WHERE id = '25'");
 						$content .= alert("success", "Theme changed to ".$pSelectedStyle.".");
 						$selectedTheme = $pSelectedStyle;
+						regenerateCSRFToken();
 					}
 				}
 			}
@@ -329,6 +356,7 @@ if($_SESSION['admin']){
 		    </script>
 		  </center>
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
@@ -336,9 +364,11 @@ if($_SESSION['admin']){
 
 		$reCaptcha_privkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '8' LIMIT 1")->fetch_assoc()['value'];
 		$reCaptcha_pubkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '9' LIMIT 1")->fetch_assoc()['value'];
-		
+
 		if($_GET['c'] == 6){
-			if(!$_POST['recaptcha_pubkey'] OR !$_POST['recaptcha_privkey']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_POST['recaptcha_pubkey'] OR !$_POST['recaptcha_privkey']){
 				$content .= alert("danger", "reCaptcha Keys can't be blank.");
 			} else {
 				$reCaptcha_privkey5 = $mysqli->real_escape_string($_POST['recaptcha_privkey']);
@@ -348,18 +378,20 @@ if($_SESSION['admin']){
 				$content .= alert("success", "reCaptcha Keys have been changed successfully.");
 				$reCaptcha_privkey = $mysqli->real_escape_string($_POST['recaptcha_privkey']);
 				$reCaptcha_pubkey = $mysqli->real_escape_string($_POST['recaptcha_pubkey']);
+				regenerateCSRFToken();
 			}
 		}
 
 		$content .= "<form method='post' action='?p=as&c=6'>
 		<div class='form-group'>
 			<label>reCaptcha Public Key</label>
-			<center><input class='form-control' type='text' value='".$reCaptcha_pubkey."' name='recaptcha_pubkey' style='width: 375px;' placeholder='reCaptcha Public Key'></center>
+			<center><input class='form-control' type='text' value='".escapeHTML($reCaptcha_pubkey)."' name='recaptcha_pubkey' style='width: 375px;' placeholder='reCaptcha Public Key'></center>
 		</div>
 		<div class='form-group'>
 			<label>reCaptcha Private Key</label>
-			<center><input class='form-control' type='text' value='".$reCaptcha_privkey."' name='recaptcha_privkey' style='width: 375px;' placeholder='reCaptcha Private Key'></center>
+			<center><input class='form-control' type='text' value='".escapeHTML($reCaptcha_privkey)."' name='recaptcha_privkey' style='width: 375px;' placeholder='reCaptcha Private Key'></center>
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
@@ -369,9 +401,11 @@ if($_SESSION['admin']){
 		$solvemedia_ckey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '2' LIMIT 1")->fetch_assoc()['value'];
 		$solvemedia_vkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '3' LIMIT 1")->fetch_assoc()['value'];
 		$solvemedia_hkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '4' LIMIT 1")->fetch_assoc()['value'];
-		
+
 		if($_GET['c'] == 7){
-			if(!$_POST['solvemedia_ckey'] OR !$_POST['solvemedia_vkey'] OR !$_POST['solvemedia_hkey']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_POST['solvemedia_ckey'] OR !$_POST['solvemedia_vkey'] OR !$_POST['solvemedia_hkey']){
 				$content .= alert("danger", "SolveMedia Keys can't be blank.");
 			} else {
 				$solvemedia_ckey = $mysqli->real_escape_string($_POST['solvemedia_ckey']);
@@ -382,22 +416,24 @@ if($_SESSION['admin']){
 				$mysqli->query("UPDATE faucet_settings Set value = '$solvemedia_vkey' WHERE id = '3'");
 				$mysqli->query("UPDATE faucet_settings Set value = '$solvemedia_hkey' WHERE id = '4'");
 				$content .= alert("success", "SolveMedia Keys have been changed successfully.");
+				regenerateCSRFToken();
 			}
 		}
 
 		$content .= "<form method='post' action='?p=as&c=7'>
 		<div class='form-group'>
 			<label>SolveMedia Challenge Key (C-Key)</label>
-			<center><input class='form-control' type='text' value='".$solvemedia_ckey."' name='solvemedia_ckey' style='width: 375px;' placeholder='SolveMedia C-Key'></center>
+			<center><input class='form-control' type='text' value='".escapeHTML($solvemedia_ckey)."' name='solvemedia_ckey' style='width: 375px;' placeholder='SolveMedia C-Key'></center>
 		</div>
 		<div class='form-group'>
 			<label>SolveMedia Verification Key (V-Key)</label>
-			<center><input class='form-control' type='text' value='".$solvemedia_vkey."' name='solvemedia_vkey' style='width: 375px;' placeholder='SolveMedia V-Key'></center>
+			<center><input class='form-control' type='text' value='".escapeHTML($solvemedia_vkey)."' name='solvemedia_vkey' style='width: 375px;' placeholder='SolveMedia V-Key'></center>
 		</div>
 		<div class='form-group'>
 			<label>SolveMedia Authentication Hash Key (H-Key)</label>
-			<center><input class='form-control' type='text' value='".$solvemedia_hkey."' name='solvemedia_hkey' style='width: 375px;' placeholder='SolveMedia H-Key'></center>
+			<center><input class='form-control' type='text' value='".escapeHTML($solvemedia_hkey)."' name='solvemedia_hkey' style='width: 375px;' placeholder='SolveMedia H-Key'></center>
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
@@ -405,9 +441,11 @@ if($_SESSION['admin']){
 
 		$hCaptchaPublic = $mysqli->query("SELECT * FROM faucet_settings WHERE name = 'hcaptcha_pub_key' LIMIT 1")->fetch_assoc()['value'];
 		$hCaptchaSecret = $mysqli->query("SELECT * FROM faucet_settings WHERE name = 'hcaptcha_sec_key' LIMIT 1")->fetch_assoc()['value'];
-		
+
 		if($_GET['c'] == 8){
-			if(!$_POST['hcaptcha_pub_key'] OR !$_POST['hcaptcha_sec_key']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_POST['hcaptcha_pub_key'] OR !$_POST['hcaptcha_sec_key']){
 				$content .= alert("danger", "hCaptcha Keys Keys can't be blank.");
 			} else {
 				$hCaptchaPublic = $mysqli->real_escape_string($_POST['hcaptcha_pub_key']);
@@ -416,18 +454,20 @@ if($_SESSION['admin']){
 				$mysqli->query("UPDATE faucet_settings Set value = '$hCaptchaPublic' WHERE name = 'hcaptcha_pub_key'");
 				$mysqli->query("UPDATE faucet_settings Set value = '$hCaptchaSecret' WHERE name = 'hcaptcha_sec_key'");
 				$content .= alert("success", "hCaptcha Keys have been changed successfully.");
+				regenerateCSRFToken();
 			}
 		}
 
 		$content .= "<form method='post' action='?p=as&c=8'>
 		<div class='form-group'>
 			<label>hCaptcha Public Key</label>
-			<center><input class='form-control' type='text' value='".$hCaptchaPublic."' name='hcaptcha_pub_key' style='width: 375px;' placeholder='hCaptcha Public Key'></center>
+			<center><input class='form-control' type='text' value='".escapeHTML($hCaptchaPublic)."' name='hcaptcha_pub_key' style='width: 375px;' placeholder='hCaptcha Public Key'></center>
 		</div>
 		<div class='form-group'>
 			<label>hCaptcha Secret Key</label>
-			<center><input class='form-control' type='text' value='".$hCaptchaSecret."' name='hcaptcha_sec_key' style='width: 375px;' placeholder='hCaptcha Secret Key'></center>
+			<center><input class='form-control' type='text' value='".escapeHTML($hCaptchaSecret)."' name='hcaptcha_sec_key' style='width: 375px;' placeholder='hCaptcha Secret Key'></center>
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
@@ -437,19 +477,29 @@ if($_SESSION['admin']){
 
 		if($claimStatus == "yes"){
 			if($_GET['eb'] == "n"){
-				$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '11'");
-				$content .= alert("success", "Claiming from Faucet is disabled.");
-				$content .= "<a href='?p=as&eb=y' class='btn btn-default'>Enable claim</a>";
+				if(!validateAdminCSRF()){
+					$content .= alert("danger", "Invalid security token. Please try again.");
+				} else {
+					$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '11'");
+					$content .= alert("success", "Claiming from Faucet is disabled.");
+					$content .= "<a href='?p=as&eb=y' class='btn btn-default'>Enable claim</a>";
+					regenerateCSRFToken();
+				}
 			} else {
-				$content .= "<a href='?p=as&eb=n' class='btn btn-default'>Disable claim</a>";
+				$content .= "<form method='post' action='?p=as&eb=n'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Disable claim</button></form>";
 			}
 		} else if($claimStatus == "no"){
 			if($_GET['eb'] == "y"){
-				$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '11'");
-				$content .= alert("success", "Claiming from Faucet is enabled.");
-				$content .= "<a href='?p=as&eb=n' class='btn btn-default'>Disable claim</a>";
+				if(!validateAdminCSRF()){
+					$content .= alert("danger", "Invalid security token. Please try again.");
+				} else {
+					$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '11'");
+					$content .= alert("success", "Claiming from Faucet is enabled.");
+					$content .= "<form method='post' action='?p=as&eb=n'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Disable claim</button></form>";
+					regenerateCSRFToken();
+				}
 			} else {
-				$content .= "<a href='?p=as&eb=y' class='btn btn-default'>Enable claim</a>";
+				$content .= "<form method='post' action='?p=as&eb=y'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Enable claim</button></form>";
 			}
 		}
 
@@ -461,40 +511,52 @@ if($_SESSION['admin']){
 
 		if($shieldStatus == "yes"){
 			if($_GET['sp'] == "n"){
-				$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '14'");
-				$content .= alert("success", "VPN/Proxy Shield is disabled.");
-				$content .= "<a href='?p=as&sp=y' class='btn btn-default'>Enable Shield</a>";
+				if(!validateAdminCSRF()){
+					$content .= alert("danger", "Invalid security token. Please try again.");
+				} else {
+					$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '14'");
+					$content .= alert("success", "VPN/Proxy Shield is disabled.");
+					$content .= "<form method='post' action='?p=as&sp=y'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Enable Shield</button></form>";
+					regenerateCSRFToken();
+				}
 			} else {
-				$content .= "<a href='?p=as&sp=n' class='btn btn-default'>Disable Shield</a>";
+				$content .= "<form method='post' action='?p=as&sp=n'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Disable Shield</button></form>";
 			}
 		} else if($shieldStatus == "no"){
 			if($_GET['sp'] == "y"){
-				if(!$iphubApiKey){
+				if(!validateAdminCSRF()){
+					$content .= alert("danger", "Invalid security token. Please try again.");
+				} else if(!$iphubApiKey){
 					$content .= alert("warning", "Please enter firstly the IPHub API Key below.");
 				} else {
 					$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '14'");
 					$content .= alert("success", "VPN/Proxy Shield is enabled.");
-					$content .= "<a href='?p=as&sp=n' class='btn btn-default'>Disable Shield</a>";
+					$content .= "<form method='post' action='?p=as&sp=n'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Disable Shield</button></form>";
+					regenerateCSRFToken();
 				}
 			} else {
-				$content .= "<a href='?p=as&sp=y' class='btn btn-default'>Enable Shield</a>";
+				$content .= "<form method='post' action='?p=as&sp=y'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Enable Shield</button></form>";
 			}
 		}
 
 
 		if($_GET['c'] == 9){
-			if(isset($_POST['iphub_apikey'])){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(isset($_POST['iphub_apikey'])){
 				$iphubApiKey = $mysqli->real_escape_string($_POST['iphub_apikey']);
 				$mysqli->query("UPDATE faucet_settings Set value = '$iphubApiKey' WHERE id = '22'");
 				$content .= alert("success", "The API has been changed successfully.");
+				regenerateCSRFToken();
 			}
 		}
 
 		$content .= "<br /><p>The VPN/Proxy shield requires an API Key of IPHub.info.</p><br /><form method='post' action='?p=as&c=9'>
 		<div class='form-group'>
 			<label>IPHub API Key</label>
-			<center><input class='form-control' type='text' value='".$iphubApiKey."' name='iphub_apikey' style='width: 375px;' placeholder='IPHub API Key'></center>
+			<center><input class='form-control' type='text' value='".escapeHTML($iphubApiKey)."' name='iphub_apikey' style='width: 375px;' placeholder='IPHub API Key'></center>
 		</div>
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
@@ -508,19 +570,29 @@ if($_SESSION['admin']){
 
 		if($reverseProxyStatus == "yes"){
 			if($_GET['rvp'] == "n"){
-				$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '16'");
-				$content .= alert("success", "Reverse Proxy is disabled.");
-				$content .= "<a href='?p=as&rvp=y' class='btn btn-default'>Enable Reverse Proxy Feature</a>";
+				if(!validateAdminCSRF()){
+					$content .= alert("danger", "Invalid security token. Please try again.");
+				} else {
+					$mysqli->query("UPDATE faucet_settings Set value = 'no' WHERE id = '16'");
+					$content .= alert("success", "Reverse Proxy is disabled.");
+					$content .= "<form method='post' action='?p=as&rvp=y'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Enable Reverse Proxy Feature</button></form>";
+					regenerateCSRFToken();
+				}
 			} else {
-				$content .= "<a href='?p=as&rvp=n' class='btn btn-default'>Disable Reverse Proxy Feature</a>";
+				$content .= "<form method='post' action='?p=as&rvp=n'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Disable Reverse Proxy Feature</button></form>";
 			}
 		} else if($reverseProxyStatus == "no"){
 			if($_GET['rvp'] == "y"){
-				$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '16'");
-				$content .= alert("success", "Reverse Proxy is enabled.");
-				$content .= "<a href='?p=as&rvp=n' class='btn btn-default'>Disable Reverse Proxy Feature</a>";
+				if(!validateAdminCSRF()){
+					$content .= alert("danger", "Invalid security token. Please try again.");
+				} else {
+					$mysqli->query("UPDATE faucet_settings Set value = 'yes' WHERE id = '16'");
+					$content .= alert("success", "Reverse Proxy is enabled.");
+					$content .= "<form method='post' action='?p=as&rvp=n'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Disable Reverse Proxy Feature</button></form>";
+					regenerateCSRFToken();
+				}
 			} else {
-				$content .= "<a href='?p=as&rvp=y' class='btn btn-default'>Enable Reverse Proxy Feature</a>";
+				$content .= "<form method='post' action='?p=as&rvp=y'>".csrfTokenField()."<button type='submit' class='btn btn-default'>Enable Reverse Proxy Feature</button></form>";
 			}
 		}
 
@@ -530,13 +602,16 @@ if($_SESSION['admin']){
 		$content .= "<a href='admin.php'>Back</a><br><h3>Page settings</h3><h4>Create new Page</h4>";
 
 		if($_GET['cr'] == "y"){
-			if(!$_POST['name']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_POST['name']){
 				$content .= alert("danger", "Pagename can't be blank.");
 			} else {
 				$name = $mysqli->real_escape_string($_POST['name']);
 				$timestamp = time();
 				$mysqli->query("INSERT INTO faucet_pages (name, content, timestamp_created) VALUES ('$name', '', '$timestamp')");
 				$content .= alert("success", "Page was successfully created.");
+				regenerateCSRFToken();
 			}
 		}
 
@@ -545,7 +620,7 @@ if($_SESSION['admin']){
 			<label>Name</label>
 			<center><input type='text' name='name' style='width:225px;' class='form-control' placeholder='Name ...'></center>
 		</div>
-
+		".csrfTokenField()."
 		<button type='submit' class='btn btn-primary'>Add Page</button>
 		</form><br /><h4>Change Pages</h4>";
 
@@ -557,23 +632,29 @@ if($_SESSION['admin']){
 		</script>";
 
 		if(isset($_GET['ch'])){
-			if(!$_GET['ch'] OR !is_numeric($_GET['ch']) OR !$_POST['content']){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_GET['ch'] OR !is_numeric($_GET['ch']) OR !$_POST['content']){
 				$content .= alert("danger", "Please fill all forms.");
 			} else {
 				$pageContent = $mysqli->real_escape_string($_POST['content']);
 				$pageID = $mysqli->real_escape_string($_GET['ch']);
 				$mysqli->query("UPDATE faucet_pages Set content = '$pageContent' WHERE id = '$pageID'");
 				$content .= alert("success", "Content was changed successfully.");
+				regenerateCSRFToken();
 			}
 		}
 
 		if(isset($_GET['del'])){
-			if(!$_GET['del'] OR !is_numeric($_GET['del'])){
+			if(!validateAdminCSRF()){
+				$content .= alert("danger", "Invalid security token. Please try again.");
+			} else if(!$_GET['del'] OR !is_numeric($_GET['del'])){
 				$content .= alert("danger", "Please fill all forms.");
 			} else {
 				$delid = $mysqli->real_escape_string($_GET['del']);
 				$mysqli->query("DELETE FROM faucet_pages WHERE id = '$delid'");
 				$content .= alert("success", "Page was deleted successfully.");
+				regenerateCSRFToken();
 			}
 		}
 
@@ -582,7 +663,7 @@ if($_SESSION['admin']){
 		$PageNameTabs = $mysqli->query("SELECT id, name FROM faucet_pages");
 
 		while($Tab = $PageNameTabs->fetch_assoc()){
-			$Navtabs .= "<li role=\"presentation\"><a href=\"#pn".$Tab['id']."\" aria-controls=\"pn".$Tab['id']."\" role=\"tab\" data-toggle=\"tab\">".$Tab['name']."</a></li>";
+			$Navtabs .= "<li role=\"presentation\"><a href=\"#pn".$Tab['id']."\" aria-controls=\"pn".$Tab['id']."\" role=\"tab\" data-toggle=\"tab\">".escapeHTML($Tab['name'])."</a></li>";
 		}
 
 		$PageConf = "";
@@ -592,15 +673,19 @@ if($_SESSION['admin']){
 		while($PageConf2 = $PageConf1->fetch_assoc()){
 			$PageConf .= "<div role=\"tabpanel\" class=\"tab-pane\"  id=\"pn".$PageConf2['id']."\">
 			<form method='post' action='?p=ps&ch=".$PageConf2['id']."'>
-			<textarea class='form-control' cols='65' rows='10' name='content'>".$PageConf2['content']."</textarea><br />
+			<textarea class='form-control' cols='65' rows='10' name='content'>".escapeHTML($PageConf2['content'])."</textarea><br />
+			".csrfTokenField()."
 			<button type='submit' class='btn btn-success btn-lg'>Change</button>
 			</form><br />
 			<hr />
-			<a href='?p=ps&del=".$PageConf2['id']."' class='btn btn-danger'>Delete Page</a>
+			<form method='post' action='?p=ps&del=".$PageConf2['id']."' onsubmit='return confirm(\"Are you sure you want to delete this page?\");'>
+			".csrfTokenField()."
+			<button type='submit' class='btn btn-danger'>Delete Page</button>
+			</form>
 			</div>";
 		}
 
-		
+
 
 		$content .= "
 
@@ -635,11 +720,14 @@ if($_SESSION['admin']){
 	$blockioPin = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '21'")->fetch_assoc()['value'];
 
 	if($_POST['withdrawal_method']){
-		if($_POST['withdrawal_method'] == 1){
+		if(!validateAdminCSRF()){
+			$alertForm .= alert("danger", "Invalid security token. Please try again.");
+		} else if($_POST['withdrawal_method'] == 1){
 			if($_POST['api_key'] != $faucetpayApiToken){
 				$faucetpayApiToken = $mysqli->real_escape_string($_POST['api_key']);
 				$mysqli->query("UPDATE faucet_settings Set value = '$faucetpayApiToken' WHERE id = '19'");
 				$alertForm .= alert("success", "FaucetPay API Key has been changed.");
+				regenerateCSRFToken();
 			}
 		} else if($_POST['withdrawal_method'] == 2){
 			if($_POST['api_key'] != $blockioApiKey){
@@ -653,6 +741,7 @@ if($_SESSION['admin']){
 				$mysqli->query("UPDATE faucet_settings Set value = '$blockioPin' WHERE id = '21'");
 				$alertForm .= alert("success", "Block.io PIN has been changed.");
 			}
+			regenerateCSRFToken();
 		}
 	}
 
@@ -661,7 +750,9 @@ if($_SESSION['admin']){
 
 
 	if($_POST['threshold_gateway']){
-		if($_POST['threshold_gateway'] != $thresholdGateway OR $_POST['threshold_direct'] != $thresholdDirect){
+		if(!validateAdminCSRF()){
+			$alertFormThreshold = alert("danger", "Invalid security token. Please try again.");
+		} else if($_POST['threshold_gateway'] != $thresholdGateway OR $_POST['threshold_direct'] != $thresholdDirect){
 			$pThreSholdGateway = $mysqli->real_escape_string($_POST['threshold_gateway']);
 			$pThreSholdDirect = $mysqli->real_escape_string($_POST['threshold_direct']);
 
@@ -674,6 +765,7 @@ if($_SESSION['admin']){
 
 				$thresholdGateway = $pThreSholdGateway;
 				$thresholdDirect = $pThreSholdDirect;
+				regenerateCSRFToken();
 			}
 		}
 	}
@@ -698,13 +790,14 @@ if($_SESSION['admin']){
 				<div class='form-group'>
 					<label class='col-md-3 control-label'>API Key</label>
 					<div class='col-md-8'>
-						<input type='text' class='form-control' name='api_key' value='".$faucetpayApiToken."' placeholder='API Key ...' />
+						<input type='text' class='form-control' name='api_key' value='".escapeHTML($faucetpayApiToken)."' placeholder='API Key ...' />
 					</div>
 				</div><br />
 
 				<p>You can generate an API Key at <a href='https://faucetpay.io/' target='_blank'>Faucetpay.io</a>.</p><br />
 
 				<input type='hidden' name='withdrawal_method' value='1' />
+				".csrfTokenField()."
 				<button type='submit' class='btn btn-success'>Save</button>
 			</form>
 		</div>
@@ -715,20 +808,21 @@ if($_SESSION['admin']){
 				<div class='form-group'>
 					<label class='col-md-3 control-label'>API Key</label>
 					<div class='col-md-8'>
-						<input type='text' class='form-control' name='api_key' value='".$blockioApiKey."' placeholder='API Key ...' />
+						<input type='text' class='form-control' name='api_key' value='".escapeHTML($blockioApiKey)."' placeholder='API Key ...' />
 					</div>
 				</div><br />
 
 				<div class='form-group'>
 					<label class='col-md-3 control-label'>PIN</label>
 					<div class='col-md-8'>
-						<input type='text' class='form-control' name='pin' value='".$blockioPin."' placeholder='PIN ...' />
+						<input type='text' class='form-control' name='pin' value='".escapeHTML($blockioPin)."' placeholder='PIN ...' />
 					</div>
 				</div><br />
 
 				<p>You can generate an API Key at <a href='https://block.io/' target='_blank'>Block.io</a>.</p><br />
 
 				<input type='hidden' name='withdrawal_method' value='2' />
+				".csrfTokenField()."
 				<button type='submit' class='btn btn-success'>Save</button>
 			</form>
 		</div><br /><br />
@@ -742,7 +836,7 @@ if($_SESSION['admin']){
 				<div class='form-group'>
 					<label class='col-md-5 control-label'>Withdrawal Threshold (Payment Provider)</label>
 					<div class='col-md-6'>
-						<input type='number' class='form-control' name='threshold_gateway' value='".$thresholdGateway."' placeholder='...' />
+						<input type='number' class='form-control' name='threshold_gateway' value='".escapeHTML($thresholdGateway)."' placeholder='...' />
 						<span class='help-block'>Withdrawal thresholds for payments over ExpressCrypto and FaucetPay</span>
 					</div>
 				</div><br />
@@ -750,11 +844,12 @@ if($_SESSION['admin']){
 				<div class='form-group'>
 					<label class='col-md-5 control-label'>Withdrawal Threshold (Direct)</label>
 					<div class='col-md-6'>
-						<input type='number' class='form-control' name='threshold_direct' value='".$thresholdDirect."' placeholder='...' />
+						<input type='number' class='form-control' name='threshold_direct' value='".escapeHTML($thresholdDirect)."' placeholder='...' />
 						<span class='help-block'>Withdrawal thresholds for direct payments using Block.io</span>
 					</div>
 				</div><br />
 
+				".csrfTokenField()."
 				<button type='submit' class='btn btn-success'>Save</button><br /><br />
 
 				<span class='help-block'>Above values refer to the smallest unit (Satoshi, Litoshi, Gwei, etc...)</span>
@@ -775,60 +870,72 @@ if($_SESSION['admin']){
 	$content .= "<h3>Space top</h4>";
 
 	$Spacetop = $mysqli->query("SELECT space FROM faucet_spaces WHERE id = '1' LIMIT 1")->fetch_assoc()['space'];
-		
+
 	if($_GET['c'] == 1){
-		if(!isset($_POST['spacetop'])){
+		if(!validateAdminCSRF()){
+			$content .= alert("danger", "Invalid security token. Please try again.");
+		} else if(!isset($_POST['spacetop'])){
 			$content .= alert("danger", "Error.");
 		} else {
 			$Spacetop = $mysqli->real_escape_string($_POST['spacetop']);
 			$mysqli->query("UPDATE faucet_spaces Set space = '$Spacetop' WHERE id = '1'");
 			$content .= alert("success", "HTML Code 'Space top' changed successfully. Change will take in effect on reload.");
 			$Spacetop = $_POST['spacetop'];
+			regenerateCSRFToken();
 		}
 	}
 
 	$content .= "<form method='post' action='?p=ads&c=1'>
-	<textarea class='form-control' cols='65' rows='10' name='spacetop'>".$Spacetop."</textarea><br />
+	<textarea class='form-control' cols='65' rows='10' name='spacetop'>".escapeHTML($Spacetop)."</textarea><br />
+	".csrfTokenField()."
 	<button type='submit' class='btn btn-success btn-lg'>Change</button>
 	</form><br />";
 
 	$content .= "<h3>Space left</h4>";
 
 	$Spaceleft = $mysqli->query("SELECT space FROM faucet_spaces WHERE id = '2' LIMIT 1")->fetch_assoc()['space'];
-		
+
 	if($_GET['c'] == 2){
-		if(!isset($_POST['spaceleft'])){
+		if(!validateAdminCSRF()){
+			$content .= alert("danger", "Invalid security token. Please try again.");
+		} else if(!isset($_POST['spaceleft'])){
 			$content .= alert("danger", "Error.");
 		} else {
 			$Spaceleft = $mysqli->real_escape_string($_POST['spaceleft']);
 			$mysqli->query("UPDATE faucet_spaces Set space = '$Spaceleft' WHERE id = '2'");
 			$content .= alert("success", "HTML Code 'Space left' changed successfully. Change will take in effect on reload.");
 			$Spaceleft = $_POST['spaceleft'];
+			regenerateCSRFToken();
 		}
 	}
 
 	$content .= "<form method='post' action='?p=ads&c=2'>
-	<textarea class='form-control' cols='65' rows='10' name='spaceleft'>".$Spaceleft."</textarea><br />
+	<textarea class='form-control' cols='65' rows='10' name='spaceleft'>".escapeHTML($Spaceleft)."</textarea><br />
+	".csrfTokenField()."
 	<button type='submit' class='btn btn-success btn-lg'>Change</button>
 	</form><br />";
 
 	$content .= "<h3>Space right</h4>";
 
 	$Spaceright = $mysqli->query("SELECT space FROM faucet_spaces WHERE id = '3' LIMIT 1")->fetch_assoc()['space'];
-		
+
 	if($_GET['c'] == 3){
-		if(!isset($_POST['spaceright'])){
+		if(!validateAdminCSRF()){
+			$content .= alert("danger", "Invalid security token. Please try again.");
+		} else if(!isset($_POST['spaceright'])){
 			$content .= alert("danger", "Error.");
 		} else {
 			$Spaceright = $mysqli->real_escape_string($_POST['spaceright']);
 			$mysqli->query("UPDATE faucet_spaces Set space = '$Spaceright' WHERE id = '3'");
 			$content .= alert("success", "HTML Code 'Space right' changed successfully. Change will take in effect on reload.");
 			$Spaceright = $_POST['spaceright'];
+			regenerateCSRFToken();
 		}
 	}
 
 	$content .= "<form method='post' action='?p=ads&c=3'>
-	<textarea class='form-control' cols='65' rows='10' name='spaceright'>".$Spaceright."</textarea><br />
+	<textarea class='form-control' cols='65' rows='10' name='spaceright'>".escapeHTML($Spaceright)."</textarea><br />
+	".csrfTokenField()."
 	<button type='submit' class='btn btn-success btn-lg'>Change</button>
 	</form><br />";
 
@@ -838,13 +945,15 @@ if($_SESSION['admin']){
 	$content .= "<a href='admin.php'>Back</a><br>
 	<h3>Admin Settings</h3><h4>Ban IPs</h4>
 	<p>Bots that drains your faucet is always hard to refuse.<br />
-	With this feature you can ban IPs like known bots or VPN.</p><br /> 
+	With this feature you can ban IPs like known bots or VPN.</p><br />
 
 	<h3>Add IPs to ban</h3>
 	<p>Please enter for each line a IP address.</p>";
 
 	if($_GET['c'] == 1){
-		if(!$_POST['ips']){
+		if(!validateAdminCSRF()){
+			$content .= alert("danger", "Invalid security token. Please try again.");
+		} else if(!$_POST['ips']){
 			$content .= alert("danger", "Can't find IP Address.");
 		} else {
 			$ips = explode("\r\n", $_POST['ips']);
@@ -853,27 +962,35 @@ if($_SESSION['admin']){
 			    $mysqli->query("INSERT INTO faucet_banned_ip (ip_address) VALUES ('$banips2')");
 			}
 			$content .= alert("success", "IP address added to the blacklist.");
+			regenerateCSRFToken();
 		}
 	}
 
 	$content .= "<form method='post' action='?p=bip&c=1'>
 	<textarea class='form-control' cols='65' rows='10' name='ips'></textarea><br />
+	".csrfTokenField()."
 	<button type='submit' class='btn btn-success btn-lg'>Add to the blacklist</button>
 	</form><br />";
 
 	$content .= "<h3>Show banned IPs/Remove IPs</h3>";
 
 	if($_GET['delip']){
-		$Ipid = $mysqli->real_escape_string($_GET['delip']);
-
-		$Ip = $mysqli->query("SELECT * FROM faucet_banned_ip WHERE id = '$Ipid'");
-		if($Ip->num_rows == 1){
-			$mysqli->query("DELETE FROM faucet_banned_ip WHERE id = '$Ipid'");
-			$content .= alert("success", "IP Address was removed from banlist.");
+		if(!validateAdminCSRF()){
+			$content .= alert("danger", "Invalid security token. Please try again.");
 			$scroll = true;
 		} else {
-			$content .= alert("danger", "The IP Address/ID can't be found in the banlist.");
-			$scroll = true;
+			$Ipid = $mysqli->real_escape_string($_GET['delip']);
+
+			$Ip = $mysqli->query("SELECT * FROM faucet_banned_ip WHERE id = '$Ipid'");
+			if($Ip->num_rows == 1){
+				$mysqli->query("DELETE FROM faucet_banned_ip WHERE id = '$Ipid'");
+				$content .= alert("success", "IP Address was removed from banlist.");
+				$scroll = true;
+				regenerateCSRFToken();
+			} else {
+				$content .= alert("danger", "The IP Address/ID can't be found in the banlist.");
+				$scroll = true;
+			}
 		}
 	}
 
@@ -892,9 +1009,9 @@ if($_SESSION['admin']){
 
 	while($ShowBIP = $BannedIPs->fetch_assoc()){
 		$bodyTable .= "<tr>
-						<td>".$ShowBIP['id']."</td>
-						<td>".$ShowBIP['ip_address']."</td>
-						<td><a href='?p=bip&delip=".$ShowBIP['id']."'>Delete</a></td>
+						<td>".escapeHTML($ShowBIP['id'])."</td>
+						<td>".escapeHTML($ShowBIP['ip_address'])."</td>
+						<td><form method='post' action='?p=bip&delip=".$ShowBIP['id']."' style='display:inline;'>".csrfTokenField()."<button type='submit' onclick='return confirm(\"Are you sure you want to delete this IP?\");' style='background:none;border:none;color:blue;text-decoration:underline;cursor:pointer;'>Delete</button></form></td>
 					   </tr>";
 	}
 
@@ -915,13 +1032,15 @@ if($_SESSION['admin']){
 	$content .= "<a href='admin.php'>Back</a><br>
 	<h3>Admin Settings</h3><h4>Ban Address</h4>
 	<p>Bots that drains your faucet is always hard to refuse.<br />
-	With this feature you can ban Address.</p><br /> 
+	With this feature you can ban Address.</p><br />
 
 	<h3>Add Address to ban</h3>
 	<p>Please enter for each line a Bitcoin Address or EC-UserID.</p>";
 
 	if($_GET['c'] == 1){
-		if(!$_POST['addy']){
+		if(!validateAdminCSRF()){
+			$content .= alert("danger", "Invalid security token. Please try again.");
+		} else if(!$_POST['addy']){
 			$content .= alert("danger", "Can't find Bitcoin Address or EC-UserID.");
 		} else {
 			$addy = explode("\r\n", $_POST['addy']);
@@ -930,27 +1049,35 @@ if($_SESSION['admin']){
 			    $mysqli->query("INSERT INTO faucet_banned_address (address) VALUES ('$banaddy')");
 			}
 			$content .= alert("success", "Bitcoin Address added to the blacklist.");
+			regenerateCSRFToken();
 		}
 	}
 
 	$content .= "<form method='post' action='?p=bad&c=1'>
 	<textarea class='form-control' cols='65' rows='10' name='addy'></textarea><br />
+	".csrfTokenField()."
 	<button type='submit' class='btn btn-success btn-lg'>Add to the blacklist</button>
 	</form><br />";
 
 	$content .= "<h3>Show banned Address/Remove Address</h3>";
 
 	if($_GET['deladdy']){
-		$Addyid = $mysqli->real_escape_string($_GET['deladdy']);
-
-		$Addy = $mysqli->query("SELECT * FROM faucet_banned_address WHERE id = '$Addyid'");
-		if($Ip->num_rows == 1){
-			$mysqli->query("DELETE FROM faucet_banned_address WHERE id = '$Addyid'");
-			$content .= alert("success", "Bitcoin Address was removed from banlist.");
+		if(!validateAdminCSRF()){
+			$content .= alert("danger", "Invalid security token. Please try again.");
 			$scroll = true;
 		} else {
-			$content .= alert("danger", "The Bitcoin Address/EC-UserID can't be found in the banlist.");
-			$scroll = true;
+			$Addyid = $mysqli->real_escape_string($_GET['deladdy']);
+
+			$Addy = $mysqli->query("SELECT * FROM faucet_banned_address WHERE id = '$Addyid'");
+			if($Addy->num_rows == 1){
+				$mysqli->query("DELETE FROM faucet_banned_address WHERE id = '$Addyid'");
+				$content .= alert("success", "Bitcoin Address was removed from banlist.");
+				$scroll = true;
+				regenerateCSRFToken();
+			} else {
+				$content .= alert("danger", "The Bitcoin Address/EC-UserID can't be found in the banlist.");
+				$scroll = true;
+			}
 		}
 	}
 
@@ -969,9 +1096,9 @@ if($_SESSION['admin']){
 
 	while($ShowBAD = $BannedAddy->fetch_assoc()){
 		$bodyTable .= "<tr>
-						<td>".$ShowBAD['id']."</td>
-						<td>".$ShowBAD['address']."</td>
-						<td><a href='?p=bad&deladdy=".$ShowBAD['id']."'>Delete</a></td>
+						<td>".escapeHTML($ShowBAD['id'])."</td>
+						<td>".escapeHTML($ShowBAD['address'])."</td>
+						<td><form method='post' action='?p=bad&deladdy=".$ShowBAD['id']."' style='display:inline;'>".csrfTokenField()."<button type='submit' onclick='return confirm(\"Are you sure you want to delete this address?\");' style='background:none;border:none;color:blue;text-decoration:underline;cursor:pointer;'>Delete</button></form></td>
 					   </tr>";
 	}
 
@@ -995,16 +1122,22 @@ if($_SESSION['admin']){
 	<p>Enable or disable installed Addons below. Disabled addons will disappear for the users.</p>";
 
 	if(isset($_GET['sw'])){
-		$pSWID = $mysqli->real_escape_string($_GET['sw']);
-		$checkAddon = $mysqli->query("SELECT * FROM faucet_addon_list WHERE id = '$pSWID'");
-		if($checkAddon->num_rows == 1){
-			$addonData = $checkAddon->fetch_assoc();
-			if($addonData['enabled'] == 1){
-				$mysqli->query("UPDATE faucet_addon_list Set enabled = '0' WHERE id = '$pSWID'");
-				$content .= alert("info", "Addon '".$addonData['name']."' has been disabled.");
-			} else {
-				$mysqli->query("UPDATE faucet_addon_list Set enabled = '1' WHERE id = '$pSWID'");
-				$content .= alert("info", "Addon '".$addonData['name']."' has been enabled.");
+		if(!validateAdminCSRF()){
+			$content .= alert("danger", "Invalid security token. Please try again.");
+		} else {
+			$pSWID = $mysqli->real_escape_string($_GET['sw']);
+			$checkAddon = $mysqli->query("SELECT * FROM faucet_addon_list WHERE id = '$pSWID'");
+			if($checkAddon->num_rows == 1){
+				$addonData = $checkAddon->fetch_assoc();
+				if($addonData['enabled'] == 1){
+					$mysqli->query("UPDATE faucet_addon_list Set enabled = '0' WHERE id = '$pSWID'");
+					$content .= alert("info", "Addon '".escapeHTML($addonData['name'])."' has been disabled.");
+					regenerateCSRFToken();
+				} else {
+					$mysqli->query("UPDATE faucet_addon_list Set enabled = '1' WHERE id = '$pSWID'");
+					$content .= alert("info", "Addon '".escapeHTML($addonData['name'])."' has been enabled.");
+					regenerateCSRFToken();
+				}
 			}
 		}
 	}
@@ -1022,11 +1155,11 @@ if($_SESSION['admin']){
 
 	while($addonRow = $addonList->fetch_assoc()){
 		if($addonRow['enabled'] == 1)
-				$status = "<span style='color:green;'>Enabled</span> <a href='?p=adds&sw=".$addonRow['id']."' class='btn btn-primary' role='button'>Disable</a>";
+				$status = "<span style='color:green;'>Enabled</span> <form method='post' action='?p=adds&sw=".$addonRow['id']."' style='display:inline;'>".csrfTokenField()."<button type='submit' class='btn btn-primary'>Disable</button></form>";
 			else
-				$status = "<span style='color:red;'>Disabled</span> <a href='?p=adds&sw=".$addonRow['id']."' class='btn btn-primary' role='button'>Enable</a>";
-		
-		$content .= "<tr><td>".$addonRow['name']."</td><td>".$status."</td></tr>";
+				$status = "<span style='color:red;'>Disabled</span> <form method='post' action='?p=adds&sw=".$addonRow['id']."' style='display:inline;'>".csrfTokenField()."<button type='submit' class='btn btn-primary'>Enable</button></form>";
+
+		$content .= "<tr><td>".escapeHTML($addonRow['name'])."</td><td>".$status."</td></tr>";
 	}
 
 	$content .= "</tbody></table>";
@@ -1091,7 +1224,7 @@ if($_SESSION['admin']){
 		<label>Username</label>
 		<center><input class='form-control' type='text' name='username' style='width: 225px;' placeholder='Username ...'></center>
 	</div>
-	
+
 	<div class='form-group'>
 		<label>Password</label>
 		<center><input class='form-control' type='password' name='password' style='width: 225px;' placeholder='Password ...'></center>
