@@ -1,6 +1,5 @@
 <?php
 
-define('USE_SQLITE', true);
 
 // Database Configuration
 // Set USE_SQLITE=true or define USE_SQLITE before including this file for SQLite
