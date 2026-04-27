@@ -18,18 +18,13 @@ if($user){
 	unset($_SESSION['token']);
 	$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
 
-	if(isset($_POST['verifykey'])){
+		if(isset($_POST['verifykey'])){
 		if($_POST['verifykey'] != $user['claim_cryptokey']){
 			$content .= alert("danger", "Claim failed. <a href='index.php'>Go back</a>");
 		} else {
 
 
-			$reCaptchaPubKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '9' LIMIT 1")->fetch_assoc()['value'];
-
-			if($reCaptchaPubKey){
-				$linksCaptcha .= "<a href='#' onClick='showCaptcha(1)'>reCaptcha</a> ";
-				$captchaContentBox .= "<div id='recaptcha-box'><center><div class='g-recaptcha' data-sitekey='".$reCaptchaPubKey."'></div></div>";
-			}
+			// reCAPTCHA removed - now paid only, using hCaptcha instead
 
 			$solveMediaChallengeKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '2' LIMIT 1")->fetch_assoc()['value'];
 
@@ -48,21 +43,16 @@ if($user){
 
 			$captchaContent .= "<strong>".$linksCaptcha."</strong><br /><br />
 			".$captchaContentBox."
-			<input type='hidden' id='selectedCaptcha__' name='selectedCaptcha' value='1' /><br />
+			<input type='hidden' id='selectedCaptcha__' name='selectedCaptcha' value='3' /><br />
 			<script>
-			if(document.getElementById('recaptcha-box')){
-				showCaptcha(1);
-			} else if(document.getElementById('hcaptcha-box')){
+			if(document.getElementById('hcaptcha-box')){
 				showCaptcha(3);
 			} else if(document.getElementById('solvemedia-box')){
 				showCaptcha(2);
 			}
 			function showCaptcha(captcha){
 				hideCaptchaBoxes();
-				if(captcha == 1){
-					document.getElementById('recaptcha-box').style.display = 'block';
-					document.getElementById('selectedCaptcha__').value = '1';
-				} else if(captcha == 2){
+				if(captcha == 2){
 					document.getElementById('solvemedia-box').style.display = 'block';
 					document.getElementById('selectedCaptcha__').value = '2';
 				} else if(captcha == 3){
@@ -71,9 +61,6 @@ if($user){
 				}
 			}
 			function hideCaptchaBoxes(){
-				if(document.getElementById('recaptcha-box')){
-					document.getElementById('recaptcha-box').style.display = 'none';
-				}
 				if(document.getElementById('solvemedia-box')){
 					document.getElementById('solvemedia-box').style.display = 'none';
 				}
@@ -83,7 +70,7 @@ if($user){
 			}
 			</script>";
 
-			if(!$reCaptchaPubKey AND !$solveMediaChallengeKey){
+			if(!$hCaptchaPubKey AND !$solveMediaChallengeKey){
 				$captchaContent = alert("info", "Admin hasn't set up the captcha system.");
 			}
 

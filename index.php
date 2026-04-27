@@ -5,7 +5,7 @@ $content = "";
 
 if($user){
 	$content .= "<h3>Address</h3>";
-	$content .= $user['address'];
+	$content .= htmlspecialchars($user['address'], ENT_QUOTES, 'UTF-8');
 	$content .= "<h3>Balance</h3>";
 	$content .= toSatoshi($user['balance'])." {$faucetCurrencies[$websiteCurrency][1]}<br /><br />";
 
@@ -71,7 +71,7 @@ if($user){
 					if($IpCheck >= 1){
 						$content .= alert("danger", "Someone else claimed in your network already.");
 					} else {
-						$IpCheckBan = $mysqli->query("SELECT COUNT(id) FROM faucet_banned_ip WHERE ip_address = '$ip'")->fetch_row()[0];
+						$IpCheckBan = $mysqli->query("SELECT COUNT(id) FROM faucet_banned_ip WHERE ip_address = '$realIpAddressUser'")->fetch_row()[0];
 						$AddressCheckBan = $mysqli->query("SELECT COUNT(id) FROM faucet_banned_address WHERE address = '{$user['address']}' OR address = '{$user['ec_userid']}'")->fetch_row()[0];
 						if($IpCheckBan >= 1 OR $AddressCheckBan >= 1){
 							$content .= alert("danger", "Your Address and/or IP is banned from this service.");
@@ -123,10 +123,10 @@ if($user){
 	if($referralPercent != "0"){
 	$content .= '<blockquote class="text-left">
 					<p>
-						Reflink: <code>'.$Website_Url.'?ref='.$user['id'].'</code><br />
-						Reflink with Address: <code>'.$Website_Url.'?r='.( ($user['address']) ? $user['address'] : $user['ec_userid']).'</code>
+						Reflink: <code>'.htmlspecialchars($Website_Url, ENT_QUOTES, 'UTF-8').'?ref='.htmlspecialchars($user['id'], ENT_QUOTES, 'UTF-8').'</code><br />
+						Reflink with Address: <code>'.htmlspecialchars($Website_Url, ENT_QUOTES, 'UTF-8').'?r='.htmlspecialchars(($user['address']) ? $user['address'] : $user['ec_userid'], ENT_QUOTES, 'UTF-8').'</code>
 					</p>
-					<footer>Share this link with your friends and earn '.$referralPercent.'% referral commission</footer>
+					<footer>Share this link with your friends and earn '.htmlspecialchars($referralPercent, ENT_QUOTES, 'UTF-8').'% referral commission</footer>
 				</blockquote>';
 	}
 } else {
