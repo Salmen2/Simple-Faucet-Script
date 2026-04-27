@@ -1,6 +1,6 @@
 > [!WARNING]
 >
-> This script is no longe actively maintained and may contain undiscovered security flaws.
+> This script is not actively maintained and may contain undiscovered security flaws.
 
 # Simple Faucet Script
 Crypto Faucet integrated with banlist and VPN/Proxy Shield. It uses the service of Google reCaptcha (v2; box) and IPHub. Any claims will be saved in the account balance and can be withdrawn to FaucetPay or directly using Block.io.
