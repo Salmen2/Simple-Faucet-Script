@@ -129,8 +129,7 @@ function faucetInfo($mysqli){
 }
 
 function CaptchaCheck($selectedCaptcha, $captchaData, $mysqli){
-	// reCAPTCHA removed - now paid only, using hCaptcha instead
-	} else if($selectedCaptcha == 2){
+	if($selectedCaptcha == 2){
 		$sovleMediaVerificationKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '3' LIMIT 1")->fetch_assoc()['value'];
 		$sovleMediaAuthKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '4' LIMIT 1")->fetch_assoc()['value'];
 		if(!$sovleMediaVerificationKey AND !$sovleMediaAuthKey){
@@ -188,7 +187,7 @@ function validateAdminCSRF(){
  * This prevents token reuse attacks
  */
 function regenerateCSRFToken(){
-	$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+	$_SESSION['token'] = bin2hex(random_bytes(32));
 }
 
 /**
@@ -197,7 +196,7 @@ function regenerateCSRFToken(){
  */
 function getCSRFToken(){
 	if(!isset($_SESSION['token']) || empty($_SESSION['token'])){
-		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+		$_SESSION['token'] = bin2hex(random_bytes(32));
 	}
 	return $_SESSION['token'];
 }

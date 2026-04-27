@@ -11,12 +11,12 @@ if($user){
 	}
 	if(!isset($_POST['token']) || $_POST['token'] !== $_SESSION['token']) {
 	unset($_SESSION['token']);
-	$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+	$_SESSION['token'] = bin2hex(random_bytes(32));
 	header("Location: index.php");
 	exit;
 	}
 	unset($_SESSION['token']);
-	$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+	$_SESSION['token'] = bin2hex(random_bytes(32));
 
 		if(isset($_POST['verifykey'])){
 		if($_POST['verifykey'] != $user['claim_cryptokey']){
