@@ -8,8 +8,6 @@ include("template.settings.php");
 include("functions.php");
 include("expresscrypto.library.php");
 include("faucetpay.library.php");
-include("blockio.library.php");
-include("rc/autoload.php");
 
 if(!empty($_COOKIE['refer'])){
 	if(!empty($_GET['ref'])){
@@ -50,7 +48,7 @@ if($reverseProxy == "yes"){
 // CSRF PROTECTION
 
 if($_SESSION['token'] == ""){
-	$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+	$_SESSION['token'] = bin2hex(random_bytes(32));
 }
 
 // Faucet currencies

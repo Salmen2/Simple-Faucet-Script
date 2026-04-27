@@ -135,16 +135,16 @@ if($user){
 	$content .= "<h3>Enter your Address and start to claim!</h3><br />";
 
 	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
-	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
 
 	if(isset($_POST['address'])){
+
 		if(!isset($_POST['token']) || $_POST['token'] !== $_SESSION['token']) {
+			unset($_SESSION['token']);
+			$_SESSION['token'] = bin2hex(random_bytes(32));
+			$content .= alert("danger", "Invalid security token. Please try again.");
+		} else {
 		unset($_SESSION['token']);
-		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
-		exit;
-		}
-		unset($_SESSION['token']);
-		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+		$_SESSION['token'] = bin2hex(random_bytes(32));
 
 		if($_POST['address']){
 			$Address = $mysqli->real_escape_string(trim($_POST['address']));
@@ -191,6 +191,7 @@ if($user){
 			$content .= alert("danger", "The {$websiteCurrency} address field can't be blank.");
 			$alertForm = "has-error";
 		}
+		} // end else (valid token)
 	}
 
 	$content .= "<form method='post' action=''>

@@ -1,1 +1,23 @@
+# Config with secrets
 includes/config.php
+
+# SQLite database
+data/
+*.db
+*.sqlite
+
+# Unused legacy libraries
+includes/solvemedia.library.php
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PHP logs
+*.log

@@ -360,84 +360,7 @@ if($_SESSION['admin']){
 		<button type='submit' class='btn btn-primary'>Change</button>
 		</form><br />";
 
-		$content .= "<h3>Keys settings</h3><h4>reCaptcha Keys</h4>";
-
-		$reCaptcha_privkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '8' LIMIT 1")->fetch_assoc()['value'];
-		$reCaptcha_pubkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '9' LIMIT 1")->fetch_assoc()['value'];
-
-		if($_GET['c'] == 6){
-			if(!validateAdminCSRF()){
-				$content .= alert("danger", "Invalid security token. Please try again.");
-			} else if(!$_POST['recaptcha_pubkey'] OR !$_POST['recaptcha_privkey']){
-				$content .= alert("danger", "reCaptcha Keys can't be blank.");
-			} else {
-				$reCaptcha_privkey5 = $mysqli->real_escape_string($_POST['recaptcha_privkey']);
-				$reCaptcha_pubkey5 = $mysqli->real_escape_string($_POST['recaptcha_pubkey']);
-				$mysqli->query("UPDATE faucet_settings Set value = '$reCaptcha_privkey5' WHERE id = '8'");
-				$mysqli->query("UPDATE faucet_settings Set value = '$reCaptcha_pubkey5' WHERE id = '9'");
-				$content .= alert("success", "reCaptcha Keys have been changed successfully.");
-				$reCaptcha_privkey = $mysqli->real_escape_string($_POST['recaptcha_privkey']);
-				$reCaptcha_pubkey = $mysqli->real_escape_string($_POST['recaptcha_pubkey']);
-				regenerateCSRFToken();
-			}
-		}
-
-		$content .= "<form method='post' action='?p=as&c=6'>
-		<div class='form-group'>
-			<label>reCaptcha Public Key</label>
-			<center><input class='form-control' type='text' value='".escapeHTML($reCaptcha_pubkey)."' name='recaptcha_pubkey' style='width: 375px;' placeholder='reCaptcha Public Key'></center>
-		</div>
-		<div class='form-group'>
-			<label>reCaptcha Private Key</label>
-			<center><input class='form-control' type='text' value='".escapeHTML($reCaptcha_privkey)."' name='recaptcha_privkey' style='width: 375px;' placeholder='reCaptcha Private Key'></center>
-		</div>
-		".csrfTokenField()."
-		<button type='submit' class='btn btn-primary'>Change</button>
-		</form><br />";
-
-
-		$content .= "<h4>SolveMedia Keys</h4>";
-
-		$solvemedia_ckey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '2' LIMIT 1")->fetch_assoc()['value'];
-		$solvemedia_vkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '3' LIMIT 1")->fetch_assoc()['value'];
-		$solvemedia_hkey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '4' LIMIT 1")->fetch_assoc()['value'];
-
-		if($_GET['c'] == 7){
-			if(!validateAdminCSRF()){
-				$content .= alert("danger", "Invalid security token. Please try again.");
-			} else if(!$_POST['solvemedia_ckey'] OR !$_POST['solvemedia_vkey'] OR !$_POST['solvemedia_hkey']){
-				$content .= alert("danger", "SolveMedia Keys can't be blank.");
-			} else {
-				$solvemedia_ckey = $mysqli->real_escape_string($_POST['solvemedia_ckey']);
-				$solvemedia_vkey = $mysqli->real_escape_string($_POST['solvemedia_vkey']);
-				$solvemedia_hkey = $mysqli->real_escape_string($_POST['solvemedia_hkey']);
-
-				$mysqli->query("UPDATE faucet_settings Set value = '$solvemedia_ckey' WHERE id = '2'");
-				$mysqli->query("UPDATE faucet_settings Set value = '$solvemedia_vkey' WHERE id = '3'");
-				$mysqli->query("UPDATE faucet_settings Set value = '$solvemedia_hkey' WHERE id = '4'");
-				$content .= alert("success", "SolveMedia Keys have been changed successfully.");
-				regenerateCSRFToken();
-			}
-		}
-
-		$content .= "<form method='post' action='?p=as&c=7'>
-		<div class='form-group'>
-			<label>SolveMedia Challenge Key (C-Key)</label>
-			<center><input class='form-control' type='text' value='".escapeHTML($solvemedia_ckey)."' name='solvemedia_ckey' style='width: 375px;' placeholder='SolveMedia C-Key'></center>
-		</div>
-		<div class='form-group'>
-			<label>SolveMedia Verification Key (V-Key)</label>
-			<center><input class='form-control' type='text' value='".escapeHTML($solvemedia_vkey)."' name='solvemedia_vkey' style='width: 375px;' placeholder='SolveMedia V-Key'></center>
-		</div>
-		<div class='form-group'>
-			<label>SolveMedia Authentication Hash Key (H-Key)</label>
-			<center><input class='form-control' type='text' value='".escapeHTML($solvemedia_hkey)."' name='solvemedia_hkey' style='width: 375px;' placeholder='SolveMedia H-Key'></center>
-		</div>
-		".csrfTokenField()."
-		<button type='submit' class='btn btn-primary'>Change</button>
-		</form><br />";
-
-		$content .= "<h4>hCaptcha Keys</h4>";
+		$content .= "<h3>Keys settings</h3><h4>hCaptcha Keys</h4>";
 
 		$hCaptchaPublic = $mysqli->query("SELECT * FROM faucet_settings WHERE name = 'hcaptcha_pub_key' LIMIT 1")->fetch_assoc()['value'];
 		$hCaptchaSecret = $mysqli->query("SELECT * FROM faucet_settings WHERE name = 'hcaptcha_sec_key' LIMIT 1")->fetch_assoc()['value'];
@@ -716,8 +639,6 @@ if($_SESSION['admin']){
 	</script>";
 
 	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
-	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
-	$blockioPin = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '21'")->fetch_assoc()['value'];
 
 	if($_POST['withdrawal_method']){
 		if(!validateAdminCSRF()){
@@ -729,136 +650,57 @@ if($_SESSION['admin']){
 				$alertForm .= alert("success", "FaucetPay API Key has been changed.");
 				regenerateCSRFToken();
 			}
-		} else if($_POST['withdrawal_method'] == 2){
-			if($_POST['api_key'] != $blockioApiKey){
-				$blockioApiKey = $mysqli->real_escape_string($_POST['api_key']);
-				$mysqli->query("UPDATE faucet_settings Set value = '$blockioApiKey' WHERE id = '20'");
-				$alertForm .= alert("success", "Block.io API Key has been changed.");
-			}
-
-			if($_POST['pin'] != $blockioPin){
-				$blockioPin = $mysqli->real_escape_string($_POST['pin']);
-				$mysqli->query("UPDATE faucet_settings Set value = '$blockioPin' WHERE id = '21'");
-				$alertForm .= alert("success", "Block.io PIN has been changed.");
-			}
-			regenerateCSRFToken();
 		}
 	}
 
 	$thresholdGateway = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '23'")->fetch_assoc()['value'];
-	$thresholdDirect = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '24'")->fetch_assoc()['value'];
-
 
 	if($_POST['threshold_gateway']){
 		if(!validateAdminCSRF()){
 			$alertFormThreshold = alert("danger", "Invalid security token. Please try again.");
-		} else if($_POST['threshold_gateway'] != $thresholdGateway OR $_POST['threshold_direct'] != $thresholdDirect){
+		} else if($_POST['threshold_gateway'] != $thresholdGateway){
 			$pThreSholdGateway = $mysqli->real_escape_string($_POST['threshold_gateway']);
-			$pThreSholdDirect = $mysqli->real_escape_string($_POST['threshold_direct']);
 
-			if(!is_numeric($pThreSholdGateway) OR !is_numeric($pThreSholdDirect)){
-				$alertFormThreshold = alert("danger", "Please enter numeric values.");
+			if(!is_numeric($pThreSholdGateway)){
+				$alertFormThreshold = alert("danger", "Please enter a numeric value.");
 			} else {
 				$mysqli->query("UPDATE faucet_settings Set value = '$pThreSholdGateway' WHERE id = '23'");
-				$mysqli->query("UPDATE faucet_settings Set value = '$pThreSholdDirect' WHERE id = '24'");
 				$alertFormThreshold = alert("success", "Withdrawal threshold saved.");
-
 				$thresholdGateway = $pThreSholdGateway;
-				$thresholdDirect = $pThreSholdDirect;
 				regenerateCSRFToken();
 			}
 		}
 	}
 
-
 	$content .= $alertForm."
+	<h4>FaucetPay</h4>
+	<form method='post' class='form-horizontal' action='?p=wds'>
+		<div class='form-group'>
+			<label class='col-md-3 control-label'>API Key</label>
+			<div class='col-md-8'>
+				<input type='text' class='form-control' name='api_key' value='".escapeHTML($faucetpayApiToken)."' placeholder='API Key ...' />
+			</div>
+		</div><br />
+		<p>You can generate an API Key at <a href='https://faucetpay.io/' target='_blank'>Faucetpay.io</a>.</p><br />
+		<input type='hidden' name='withdrawal_method' value='1' />
+		".csrfTokenField()."
+		<button type='submit' class='btn btn-success'>Save</button>
+	</form><br /><br />
 
-			<div>
-
-	  <!-- Nav tabs -->
-	  <ul class=\"nav nav-tabs\" role=\"tablist\">
-	    <li role=\"presentation\"><a href=\"#faucetpaytab\" aria-controls=\"faucetpaytab\" role=\"tab\" data-toggle=\"tab\">FaucetPay</a></li>
-	    <li role=\"presentation\"><a href=\"#blockiotab\" aria-controls=\"blockiotab\" role=\"tab\" data-toggle=\"tab\">Block.io</a></li>
-	  </ul><br />
-
-	  <!-- Tab panes -->
-	  <div class=\"tab-content\">
-
-		<div role=\"tabpanel\" class=\"tab-pane\" id=\"faucetpaytab\">
-			<form method='post' class='form-horizontal' action='?p=wds'>
-
-				<div class='form-group'>
-					<label class='col-md-3 control-label'>API Key</label>
-					<div class='col-md-8'>
-						<input type='text' class='form-control' name='api_key' value='".escapeHTML($faucetpayApiToken)."' placeholder='API Key ...' />
-					</div>
-				</div><br />
-
-				<p>You can generate an API Key at <a href='https://faucetpay.io/' target='_blank'>Faucetpay.io</a>.</p><br />
-
-				<input type='hidden' name='withdrawal_method' value='1' />
-				".csrfTokenField()."
-				<button type='submit' class='btn btn-success'>Save</button>
-			</form>
-		</div>
-
-		<div role=\"tabpanel\" class=\"tab-pane\" id=\"blockiotab\">
-			<form method='post' class='form-horizontal' action='?p=wds'>
-
-				<div class='form-group'>
-					<label class='col-md-3 control-label'>API Key</label>
-					<div class='col-md-8'>
-						<input type='text' class='form-control' name='api_key' value='".escapeHTML($blockioApiKey)."' placeholder='API Key ...' />
-					</div>
-				</div><br />
-
-				<div class='form-group'>
-					<label class='col-md-3 control-label'>PIN</label>
-					<div class='col-md-8'>
-						<input type='text' class='form-control' name='pin' value='".escapeHTML($blockioPin)."' placeholder='PIN ...' />
-					</div>
-				</div><br />
-
-				<p>You can generate an API Key at <a href='https://block.io/' target='_blank'>Block.io</a>.</p><br />
-
-				<input type='hidden' name='withdrawal_method' value='2' />
-				".csrfTokenField()."
-				<button type='submit' class='btn btn-success'>Save</button>
-			</form>
-		</div><br /><br />
-
-		<h4>Withdrawal Thresholds</h4><br />
-
-		".$alertFormThreshold."<br />
-
-		<form method='post' class='form-horizontal' action='?p=wds'>
-
-				<div class='form-group'>
-					<label class='col-md-5 control-label'>Withdrawal Threshold (Payment Provider)</label>
-					<div class='col-md-6'>
-						<input type='number' class='form-control' name='threshold_gateway' value='".escapeHTML($thresholdGateway)."' placeholder='...' />
-						<span class='help-block'>Withdrawal thresholds for payments over ExpressCrypto and FaucetPay</span>
-					</div>
-				</div><br />
-
-				<div class='form-group'>
-					<label class='col-md-5 control-label'>Withdrawal Threshold (Direct)</label>
-					<div class='col-md-6'>
-						<input type='number' class='form-control' name='threshold_direct' value='".escapeHTML($thresholdDirect)."' placeholder='...' />
-						<span class='help-block'>Withdrawal thresholds for direct payments using Block.io</span>
-					</div>
-				</div><br />
-
-				".csrfTokenField()."
-				<button type='submit' class='btn btn-success'>Save</button><br /><br />
-
-				<span class='help-block'>Above values refer to the smallest unit (Satoshi, Litoshi, Gwei, etc...)</span>
-		</form>
-
-
-
-	  </div>
-	</div>";
+	<h4>Withdrawal Threshold</h4><br />
+	".$alertFormThreshold."<br />
+	<form method='post' class='form-horizontal' action='?p=wds'>
+		<div class='form-group'>
+			<label class='col-md-5 control-label'>Withdrawal Threshold (FaucetPay)</label>
+			<div class='col-md-6'>
+				<input type='number' class='form-control' name='threshold_gateway' value='".escapeHTML($thresholdGateway)."' placeholder='...' />
+				<span class='help-block'>Withdrawal threshold for FaucetPay payments</span>
+			</div>
+		</div><br />
+		".csrfTokenField()."
+		<button type='submit' class='btn btn-success'>Save</button><br /><br />
+		<span class='help-block'>Above values refer to the smallest unit (Satoshi, Litoshi, Gwei, etc...)</span>
+	</form>";
 
 	break;
 
@@ -1179,12 +1021,10 @@ if($_SESSION['admin']){
 
 	if(isset($_POST['username']) AND isset($_POST['password'])){
 		if(!isset($_POST['token']) || $_POST['token'] !== $_SESSION['token']) {
-		unset($_SESSION['token']);
-		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
-		exit;
-		}
-		unset($_SESSION['token']);
-		$_SESSION['token'] = md5(md5(uniqid().uniqid().mt_rand()));
+			$_SESSION['token'] = bin2hex(random_bytes(32));
+			$content .= alert("danger", "Invalid security token. Please try again.");
+		} else {
+		$_SESSION['token'] = bin2hex(random_bytes(32));
 
 		if($_POST['username'] AND $_POST['password']){
 			$username = $mysqli->real_escape_string($_POST['username']);
@@ -1216,6 +1056,7 @@ if($_SESSION['admin']){
 		} else if($_POST['username']){
 			$content .= alert("Please fill all fields.");
 		}
+		} // end else (valid token)
 	}
 
 	$content .= "

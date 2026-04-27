@@ -50,6 +50,6 @@ header( 'Content-type: image/png' );
 imagepng( $img );
 
 //destroys used resources
-imagecolordeallocate( $img, $text_color );
+imagecolordeallocate( $img, $text_colour );
 imagecolordeallocate( $img, $background );
 imagedestroy( $img );

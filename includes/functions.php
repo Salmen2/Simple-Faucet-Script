@@ -1,5 +1,4 @@
 <?php
-require_once("solvemedia.library.php");
 
 function alert($type, $content){
 	$alert = "<div class='alert alert-".$type."' role='alert'>".$content."</div>";
@@ -109,17 +108,11 @@ function faucetInfo($mysqli){
 	$expressCryptoApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '10'")->fetch_assoc()['value'];
 	$expressCryptoUserToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '18'")->fetch_assoc()['value'];
 	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
-	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
-	$blockioPin = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '21'")->fetch_assoc()['value'];
-
 	if($expressCryptoApiToken AND $expressCryptoUserToken)
 		$availableWithdrawalMethods .= "ec,";
 
 	if($faucetpayApiToken)
 		$availableWithdrawalMethods .= "fp,";
-
-	if($blockioApiKey AND $blockioPin)
-		$availableWithdrawalMethods .= "direct,";
 
 	$jsonArray['withdrawal_methods'] = rtrim($availableWithdrawalMethods, ",");
 
@@ -129,19 +122,7 @@ function faucetInfo($mysqli){
 }
 
 function CaptchaCheck($selectedCaptcha, $captchaData, $mysqli){
-	if($selectedCaptcha == 2){
-		$sovleMediaVerificationKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '3' LIMIT 1")->fetch_assoc()['value'];
-		$sovleMediaAuthKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '4' LIMIT 1")->fetch_assoc()['value'];
-		if(!$sovleMediaVerificationKey AND !$sovleMediaAuthKey){
-			return false;
-		} else {
-			$solvemedia_response = solvemedia_check_answer($sovleMediaVerificationKey, $_SERVER["REMOTE_ADDR"], $captchaData["adcopy_challenge"], $captchaData["adcopy_response"], $sovleMediaAuthKey);
-			if(!$solvemedia_response->is_valid)
-				return false;
-			else 
-				return true;
-		}
-	} else if($selectedCaptcha == 3){
+	if($selectedCaptcha == 3){
 		$hCaptchaPrivKey = $mysqli->query("SELECT * FROM faucet_settings WHERE name = 'hcaptcha_sec_key' LIMIT 1")->fetch_assoc()['value'];
 
 		$data = array(

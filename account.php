@@ -12,98 +12,39 @@ if($user){
 	$content .= toSatoshi($user['balance'])." {$faucetCurrencies[$websiteCurrency][1]}<br /><br />";
 
 	$faucetpayApiToken = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '19'")->fetch_assoc()['value'];
-	$blockioApiKey = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '20'")->fetch_assoc()['value'];
-	$blockioPin = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '21'")->fetch_assoc()['value'];
 
-
-	if($faucetpayApiToken)
-			$faucetPayWithdrawal = true;
-		else
-			$faucetPayWithdrawal = false;
-
-	if($blockioApiKey AND $blockioPin)
-			$blockioWithdrawal = true;
-		else
-			$blockioWithdrawal = false;
-
-
-	if($faucetPayWithdrawal == true OR $blockioWithdrawal == true){
+	if($faucetpayApiToken){
 		$thresholdGateway = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '23'")->fetch_assoc()['value'];
-		$thresholdDirect = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '24'")->fetch_assoc()['value'];
-		
-		if($_GET['withdr']){
-			if($_GET['withdr'] == "fp"){
-				if(toSatoshi($user['balance']) < $thresholdGateway){
-					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdGateway." {$faucetCurrencies[$websiteCurrency][1]}s.");
+
+		if($_GET['withdr'] == "fp"){
+			if(toSatoshi($user['balance']) < $thresholdGateway){
+				$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdGateway." {$faucetCurrencies[$websiteCurrency][1]}s.");
+			} else {
+				$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
+				$faucetpay = new FaucetPay($faucetpayApiToken, $faucetCurrencies[$websiteCurrency][0]);
+				$result = $faucetpay->send($user['address'], toSatoshi($user['balance']));
+				if($result["success"] === true){
+					$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', '".time()."')");
+					$content .= $result["html"];
 				} else {
-					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
-					$faucetpay = new FaucetPay($faucetpayApiToken, $faucetCurrencies[$websiteCurrency][0]);
-					$result = $faucetpay->send($user['address'], toSatoshi($user['balance']));
-					if($result["success"] === true){
-						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', UNIX_TIMESTAMP(NOW()))");
-						$content .= $result["html"];
-					} else {
-						$mysqli->query("UPDATE faucet_user_list Set balance = '{$user['balance']}' WHERE id = '{$user['id']}'");
-						$content .= $result["html"];
-					}
+					$mysqli->query("UPDATE faucet_user_list Set balance = '{$user['balance']}' WHERE id = '{$user['id']}'");
+					$content .= $result["html"];
 				}
-			} else if($_GET['withdr'] == "direct"){
-				if(toSatoshi($user['balance']) < $thresholdDirect){
-					$content .= alert("warning", "Please reach firstly the withdrawal threshold of ".$thresholdDirect." {$faucetCurrencies[$websiteCurrency][1]}s.");
-				} else if(!in_array($websiteCurrency, array("BTC", "LTC"))){
-					$content .= alert("warning", "This currency is not supported for direct withdrawal");
-				} else {
-					$mysqli->query("UPDATE faucet_user_list Set balance = '0' WHERE id = '{$user['id']}'");
-
-					$version = 2;
-					$block_io = new BlockIo($blockioApiKey, $blockioPin, $version);
-
-					$WithdrawData = $block_io->withdraw(array('amounts' => $user['balance'], 'to_addresses' => $user['address'], 'priority' => 'low'));
-
-					if($WithdrawData->status == "success"){
-						$mysqli->query("INSERT INTO faucet_transactions (userid, type, amount, timestamp) VALUES ('{$user['id']}', 'Withdraw', '{$user['balance']}', UNIX_TIMESTAMP(NOW()))");
-						$TXID = $WithdrawData->data->txid;
-						$content .= alert("success", "Withdrawal successful. TXID: ".$TXID);
-					} else {
-						$mysqli->query("UPDATE faucet_user_list Set balance = '{$user['balance']}' WHERE id = '{$user['id']}'");
-						$content .= alert("danger", "Unexpected error occured.");
-					}
-				}
-
 			}
 		} else {
-			$withdrawalAvailable = false;
-
-			if($faucetPayWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdGateway AND $user['address']){
-				$withdrawalButtonLink .= '<li><a href="account.php?withdr=fp">FaucetPay</a></li>';
-				$withdrawalAvailable = true;
-			}
-			
-
-			$thresholdDirect = $mysqli->query("SELECT value FROM faucet_settings WHERE id = '24'")->fetch_assoc()['value'];
-			if($blockioWithdrawal == true AND toSatoshi($user['balance']) >= $thresholdDirect AND $user['address'] AND in_array($websiteCurrency, array("BTC", "LTC"))){
-				$withdrawalButtonLink .= '<li><a href="account.php?withdr=direct">Direct</a></li>';
-				$withdrawalAvailable = true;
-			}
-
-			if($faucetPayWithdrawal == false AND $blockioWithdrawal == false AND $user['address']){
-				$content .= alert("info", "Direct withdrawals and withdrawals to FaucetPay are no longer supported. Contact the Admin.");
-			} else if($withdrawalAvailable == false){
-				$thresholdAlert = ($thresholdDirect < $thresholdGateway) ? $thresholdDirect : $thresholdGateway;
-
-				$content .= alert("info", "Withdrawal threshold of ".$thresholdAlert." {$faucetCurrencies[$websiteCurrency][1]}s hasn't been reached yet.");
-			} else {
+			if(toSatoshi($user['balance']) >= $thresholdGateway AND $user['address']){
 				$content .= '<div class="btn-group">
 				  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				    Withdraw <span class="caret"></span>
 				  </button>
 				  <ul class="dropdown-menu">
-				    '.$withdrawalButtonLink.'
+				    <li><a href="account.php?withdr=fp">FaucetPay</a></li>
 				  </ul>
 				</div><br />';
+			} else {
+				$content .= alert("info", "Withdrawal threshold of ".$thresholdGateway." {$faucetCurrencies[$websiteCurrency][1]}s hasn't been reached yet.");
 			}
 		}
-
 	} else {
 		$content .= alert("warning", "The site owner hasn't configured any withdrawal methods yet.");
 	}

@@ -24,15 +24,6 @@ if($user){
 		} else {
 
 
-			// reCAPTCHA removed - now paid only, using hCaptcha instead
-
-			$solveMediaChallengeKey = $mysqli->query("SELECT * FROM faucet_settings WHERE id = '2' LIMIT 1")->fetch_assoc()['value'];
-
-			if($solveMediaChallengeKey){
-				$linksCaptcha .= "<a href='#' onCLick='showCaptcha(2)'>SolveMedia</a>";
-				$captchaContentBox .= "<div id='solvemedia-box'><center><script type=\"text/javascript\" src=\"http://api.solvemedia.com/papi/challenge.script?k=".$solveMediaChallengeKey."\"> </script> <noscript> <iframe src=\"http://api.solvemedia.com/papi/challenge.noscript?k=".$solveMediaChallengeKey."\" height=\"300\" width=\"500\" frameborder=\"0\"></iframe><br/> <textarea name=\"adcopy_challenge\" rows=\"3\" cols=\"40\"> </textarea> <input type=\"hidden\" name=\"adcopy_response\" value=\"manual_challenge\"/> </noscript></center></div>";
-			}
-
 			$hCaptchaPubKey = $mysqli->query("SELECT * FROM faucet_settings WHERE name = 'hcaptcha_pub_key'")->fetch_assoc()['value'];
 
 			if($hCaptchaPubKey){
@@ -47,30 +38,22 @@ if($user){
 			<script>
 			if(document.getElementById('hcaptcha-box')){
 				showCaptcha(3);
-			} else if(document.getElementById('solvemedia-box')){
-				showCaptcha(2);
 			}
 			function showCaptcha(captcha){
 				hideCaptchaBoxes();
-				if(captcha == 2){
-					document.getElementById('solvemedia-box').style.display = 'block';
-					document.getElementById('selectedCaptcha__').value = '2';
-				} else if(captcha == 3){
+				if(captcha == 3){
 					document.getElementById('hcaptcha-box').style.display = 'block';
 					document.getElementById('selectedCaptcha__').value = '3';
 				}
 			}
 			function hideCaptchaBoxes(){
-				if(document.getElementById('solvemedia-box')){
-					document.getElementById('solvemedia-box').style.display = 'none';
-				}
 				if(document.getElementById('hcaptcha-box')){
 					document.getElementById('hcaptcha-box').style.display = 'none';
 				}
 			}
 			</script>";
 
-			if(!$hCaptchaPubKey AND !$solveMediaChallengeKey){
+			if(!$hCaptchaPubKey){
 				$captchaContent = alert("info", "Admin hasn't set up the captcha system.");
 			}
 
