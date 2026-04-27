@@ -8,8 +8,8 @@ The faucet supports the currencies Bitcoin, Litecoin and Ethereum.
 
 # Mininum Requirements
 
-* PHP >= 5.4 (tested on 5.6), please do not use PHP 7.0 or higher
-* PHP Extensions: cURL, GMP and GD
+* PHP >= 8.0 (tested on 8.3)
+* PHP Extensions: cURL and GD
 * MySQL
 
 # Installation
